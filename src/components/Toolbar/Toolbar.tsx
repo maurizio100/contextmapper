@@ -1,0 +1,43 @@
+import { useReactFlow } from '@xyflow/react';
+
+interface ToolbarProps {
+  onAddContext: () => void;
+  onExport: () => void;
+  onExportPng: () => void;
+}
+
+export default function Toolbar({ onAddContext, onExport, onExportPng }: ToolbarProps) {
+  const { fitView } = useReactFlow();
+
+  return (
+    <div className="absolute top-4 left-4 z-10 flex gap-2">
+      <button
+        onClick={onAddContext}
+        className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        Add Context
+      </button>
+      <button
+        onClick={() => fitView({ padding: 0.2 })}
+        className="px-3 py-2 text-sm font-medium rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
+      >
+        Fit View
+      </button>
+      <button
+        onClick={onExport}
+        className="px-3 py-2 text-sm font-medium rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
+      >
+        Export to Markdown
+      </button>
+      <button
+        onClick={onExportPng}
+        className="px-3 py-2 text-sm font-medium rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
+      >
+        Export to PNG
+      </button>
+    </div>
+  );
+}
