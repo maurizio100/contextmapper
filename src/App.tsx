@@ -6,6 +6,7 @@ import ContextDialog from './components/Dialogs/ContextDialog';
 import RelationshipDialog from './components/Dialogs/RelationshipDialog';
 import { useContextMap } from './hooks/useContextMap';
 import { useMarkdownExport } from './hooks/useMarkdownExport';
+import { useMarkdownImport } from './hooks/useMarkdownImport';
 import type { BoundedContextData, RelationshipData } from './types/context-map';
 import { exportToPng } from './utils/png-export';
 import { wasDraggingRecently } from './components/Canvas/RelationshipEdge';
@@ -22,6 +23,7 @@ function AppInner() {
     updateNode,
     addEdge,
     updateEdge,
+    replaceAll,
     pendingConnection,
     clearPendingConnection,
     editingEdgeId,
@@ -33,6 +35,10 @@ function AppInner() {
   } = useContextMap();
 
   const { exportMarkdown } = useMarkdownExport(nodes, edges);
+  const { importMarkdown } = useMarkdownImport({
+    replaceAll,
+    hasExistingMap: nodes.length > 0 || edges.length > 0,
+  });
   const reactFlowInstance = useReactFlow();
   const { getViewport } = reactFlowInstance;
 
@@ -143,6 +149,7 @@ function AppInner() {
       />
       <Toolbar
         onAddContext={handleAddContext}
+        onImport={importMarkdown}
         onExport={exportMarkdown}
         onExportPng={() => exportToPng(reactFlowInstance)}
       />

@@ -5,7 +5,7 @@ import {
   useReactFlow,
   type EdgeProps,
 } from '@xyflow/react';
-import type { RelationshipData } from '../../types/context-map';
+import type { RelationshipData, RelationshipType } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
 
 let lastDragEndTime = 0;
@@ -42,6 +42,24 @@ export default function RelationshipEdge({
   const meta = data ? RELATIONSHIP_META[data.relationshipType] : null;
   const isDirectional = meta && !meta.symmetric;
 
+  // Resolve which badges to render
+  // Backward compat: old edges may store OHS/CF/ACL as the main relationshipType
+  const resolvedUpstreamType: RelationshipType | null = (() => {
+    if (!data || !isDirectional) return null;
+    if (data.upstreamType) return data.upstreamType;
+    const mainCat = RELATIONSHIP_META[data.relationshipType].category;
+    return mainCat === 'upstream-pattern' ? data.relationshipType : null;
+  })();
+  const resolvedDownstreamType: RelationshipType | null = (() => {
+    if (!data || !isDirectional) return null;
+    if (data.downstreamType) return data.downstreamType;
+    const mainCat = RELATIONSHIP_META[data.relationshipType].category;
+    return mainCat === 'downstream-pattern' ? data.relationshipType : null;
+  })();
+  // Show the base badge (CS) in center only when no side patterns are set
+  const showCenterBase =
+    isDirectional && !resolvedUpstreamType && !resolvedDownstreamType;
+
   // Control point = midpoint + user offset
   const midX = (sourceX + targetX) / 2;
   const midY = (sourceY + targetY) / 2;
@@ -54,12 +72,19 @@ export default function RelationshipEdge({
   const edgePath = `M ${sourceX} ${sourceY} Q ${ctrlX} ${ctrlY} ${targetX} ${targetY}`;
 
   // Positions along the curve
-  const labelPosX = quadAt(0.5, sourceX, ctrlX, targetX);
-  const labelPosY = quadAt(0.5, sourceY, ctrlY, targetY);
-  const srcBadgeX = quadAt(0.2, sourceX, ctrlX, targetX);
-  const srcBadgeY = quadAt(0.2, sourceY, ctrlY, targetY);
-  const tgtBadgeX = quadAt(0.8, sourceX, ctrlX, targetX);
-  const tgtBadgeY = quadAt(0.8, sourceY, ctrlY, targetY);
+  const upstreamT = data?.sourceRole === 'upstream' ? 0.12 : 0.88;
+  const downstreamT = data?.sourceRole === 'downstream' ? 0.12 : 0.88;
+  const upstreamBadgeX = quadAt(upstreamT, sourceX, ctrlX, targetX);
+  const upstreamBadgeY = quadAt(upstreamT, sourceY, ctrlY, targetY);
+  const downstreamBadgeX = quadAt(downstreamT, sourceX, ctrlX, targetX);
+  const downstreamBadgeY = quadAt(downstreamT, sourceY, ctrlY, targetY);
+  const srcBadgeX = quadAt(0.25, sourceX, ctrlX, targetX);
+  const srcBadgeY = quadAt(0.25, sourceY, ctrlY, targetY);
+  const tgtBadgeX = quadAt(0.75, sourceX, ctrlX, targetX);
+  const tgtBadgeY = quadAt(0.75, sourceY, ctrlY, targetY);
+  // Symmetric / base-only center
+  const centerX = quadAt(0.5, sourceX, ctrlX, targetX);
+  const centerY = quadAt(0.5, sourceY, ctrlY, targetY);
 
   // Arrow markers
   const markerEnd =
@@ -135,21 +160,53 @@ export default function RelationshipEdge({
       />
       {meta && (
         <EdgeLabelRenderer>
-          {/* Center label: relationship abbreviation */}
-          <div
-            className={`
-              absolute pointer-events-auto cursor-pointer
-              px-2 py-0.5 rounded text-xs font-bold
-              border shadow-sm
-              ${selected ? 'bg-blue-100 border-blue-400 text-blue-800' : 'bg-white border-gray-300 text-gray-700'}
-            `}
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelPosX}px, ${labelPosY}px)`,
-            }}
-            data-edge-id={id}
-          >
-            {meta.abbreviation}
-          </div>
+          {/* Symmetric / base-only: single center badge */}
+          {(meta.symmetric || showCenterBase) && (
+            <div
+              className={`
+                absolute pointer-events-auto cursor-pointer
+                px-2 py-0.5 rounded text-xs font-bold
+                border shadow-sm
+                ${selected ? 'bg-blue-100 border-blue-400 text-blue-800' : 'bg-white border-gray-300 text-gray-700'}
+              `}
+              style={{ transform: `translate(-50%, -50%) translate(${centerX}px, ${centerY}px)` }}
+              data-edge-id={id}
+            >
+              {meta.abbreviation}
+            </div>
+          )}
+
+          {/* Upstream pattern badge — near upstream node */}
+          {resolvedUpstreamType && (
+            <div
+              className={`
+                absolute pointer-events-auto cursor-pointer
+                px-2 py-0.5 rounded text-xs font-bold
+                border shadow-sm
+                ${selected ? 'bg-blue-100 border-blue-500 text-blue-800' : 'bg-blue-50 border-blue-300 text-blue-700'}
+              `}
+              style={{ transform: `translate(-50%, -50%) translate(${upstreamBadgeX}px, ${upstreamBadgeY}px)` }}
+              data-edge-id={id}
+            >
+              {RELATIONSHIP_META[resolvedUpstreamType].abbreviation}
+            </div>
+          )}
+
+          {/* Downstream pattern badge — near downstream node */}
+          {resolvedDownstreamType && (
+            <div
+              className={`
+                absolute pointer-events-auto cursor-pointer
+                px-2 py-0.5 rounded text-xs font-bold
+                border shadow-sm
+                ${selected ? 'bg-orange-100 border-orange-500 text-orange-800' : 'bg-orange-50 border-orange-300 text-orange-700'}
+              `}
+              style={{ transform: `translate(-50%, -50%) translate(${downstreamBadgeX}px, ${downstreamBadgeY}px)` }}
+              data-edge-id={id}
+            >
+              {RELATIONSHIP_META[resolvedDownstreamType].abbreviation}
+            </div>
+          )}
 
           {/* Draggable control handle — visible on hover / when selected */}
           <div
@@ -170,7 +227,7 @@ export default function RelationshipEdge({
             onPointerUp={onPointerUp}
           />
 
-          {/* Role badges near source and target */}
+          {/* Role badges (U/D) near source and target */}
           {isDirectional && data && (
             <>
               <div

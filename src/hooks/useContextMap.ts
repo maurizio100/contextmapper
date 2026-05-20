@@ -127,6 +127,17 @@ export function useContextMap() {
     );
   }, []);
 
+  const replaceAll = useCallback(
+    (newNodes: BoundedContextNode[], newEdges: RelationshipEdge[]) => {
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setPendingConnection(null);
+      setEditingEdgeId(null);
+      setEditingNodeId(null);
+    },
+    []
+  );
+
   const clearPendingConnection = useCallback(() => {
     setPendingConnection(null);
   }, []);
@@ -150,6 +161,7 @@ export function useContextMap() {
     updateNode,
     addEdge,
     updateEdge,
+    replaceAll,
     pendingConnection,
     clearPendingConnection,
     editingEdgeId,

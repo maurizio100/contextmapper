@@ -46,13 +46,24 @@ export function generateMarkdown(
     lines.push('|---|----------|------------|------|-------|');
     directional.forEach((edge, i) => {
       const data = edge.data as RelationshipData;
-      const meta = RELATIONSHIP_META[data.relationshipType];
+      const baseMeta = RELATIONSHIP_META[data.relationshipType];
       const upstreamId = data.sourceRole === 'upstream' ? edge.source : edge.target;
       const downstreamId = data.sourceRole === 'upstream' ? edge.target : edge.source;
       const upstream = getNodeName(nodes, upstreamId);
       const downstream = getNodeName(nodes, downstreamId);
+
+      // Build type cell: show base + side patterns when present
+      const parts: string[] = [`${baseMeta.label} (${baseMeta.abbreviation})`];
+      if (data.upstreamType) {
+        const m = RELATIONSHIP_META[data.upstreamType];
+        parts.push(`U:${m.abbreviation}`);
+      }
+      if (data.downstreamType) {
+        const m = RELATIONSHIP_META[data.downstreamType];
+        parts.push(`D:${m.abbreviation}`);
+      }
       lines.push(
-        `| ${i + 1} | ${upstream} | ${downstream} | ${meta.label} (${meta.abbreviation}) | ${data.notes || '-'} |`
+        `| ${i + 1} | ${upstream} | ${downstream} | ${parts.join(' ')} | ${data.notes || '-'} |`
       );
     });
     lines.push('');

@@ -12,7 +12,7 @@ import type {
   RelationshipEdge,
   BoundedContextData,
 } from '../../types/context-map';
-import type { NodeChange, EdgeChange, Connection, Edge } from '@xyflow/react';
+import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import BoundedContextNodeComponent from './BoundedContextNode';
 import RelationshipEdgeComponent from './RelationshipEdge';
 
@@ -31,7 +31,7 @@ interface CanvasProps {
   onNodesChange: (changes: NodeChange<BoundedContextNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<RelationshipEdge>[]) => void;
   onConnect: (connection: Connection) => void;
-  onReconnect: (oldEdge: Edge, newConnection: Connection) => void;
+  onReconnect: (oldEdge: RelationshipEdge, newConnection: Connection) => void;
   onEdgeClick: (edgeId: string) => void;
   onNodeDoubleClick: (nodeId: string) => void;
 }

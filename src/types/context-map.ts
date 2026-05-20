@@ -32,6 +32,8 @@ export interface ControlOffset {
 export interface RelationshipData {
   [key: string]: unknown;
   relationshipType: RelationshipType;
+  upstreamType?: RelationshipType | null;
+  downstreamType?: RelationshipType | null;
   sourceRole: Role;
   targetRole: Role;
   notes: string;
