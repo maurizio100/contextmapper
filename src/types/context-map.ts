@@ -17,6 +17,8 @@ export type RelationshipType =
 
 export type Role = 'upstream' | 'downstream' | 'none';
 
+export type Clarity = 'clear' | 'unsure' | 'needs-improvement';
+
 export interface BoundedContextData {
   [key: string]: unknown;
   name: string;
@@ -38,6 +40,7 @@ export interface RelationshipData {
   targetRole: Role;
   notes: string;
   controlOffset?: ControlOffset;
+  clarity?: Clarity;
 }
 
 export type BoundedContextNode = Node<BoundedContextData, 'boundedContext'>;

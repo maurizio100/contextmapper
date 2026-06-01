@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { RelationshipType, type RelationshipData, type Role } from '../../types/context-map';
+import { RelationshipType, type Clarity, type RelationshipData, type Role } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
+
+const CLARITY_OPTIONS: { value: Clarity; label: string; color: string; activeClass: string }[] = [
+  { value: 'clear',              label: 'Clear',            color: '#22c55e', activeClass: 'border-green-500 bg-green-50 text-green-800' },
+  { value: 'unsure',             label: 'Unsure',           color: '#3b82f6', activeClass: 'border-blue-500 bg-blue-50 text-blue-800' },
+  { value: 'needs-improvement',  label: 'Needs improvement', color: '#ef4444', activeClass: 'border-red-500 bg-red-50 text-red-800' },
+];
 
 interface RelationshipDialogProps {
   open: boolean;
@@ -30,6 +36,7 @@ function normalizeInitial(initial?: RelationshipData): {
   sourceRole: Role;
   targetRole: Role;
   notes: string;
+  clarity: Clarity | undefined;
 } {
   if (!initial) {
     return {
@@ -39,6 +46,7 @@ function normalizeInitial(initial?: RelationshipData): {
       sourceRole: 'upstream',
       targetRole: 'downstream',
       notes: '',
+      clarity: undefined,
     };
   }
 
@@ -63,6 +71,7 @@ function normalizeInitial(initial?: RelationshipData): {
     sourceRole: initial.sourceRole,
     targetRole: initial.targetRole,
     notes: initial.notes,
+    clarity: initial.clarity,
   };
 }
 
@@ -81,6 +90,7 @@ export default function RelationshipDialog({
   const [sourceRole, setSourceRole] = useState<Role>('upstream');
   const [targetRole, setTargetRole] = useState<Role>('downstream');
   const [notes, setNotes] = useState('');
+  const [clarity, setClarity] = useState<Clarity | undefined>(undefined);
 
   useEffect(() => {
     if (open) {
@@ -91,6 +101,7 @@ export default function RelationshipDialog({
       setSourceRole(n.sourceRole);
       setTargetRole(n.targetRole);
       setNotes(n.notes);
+      setClarity(n.clarity);
       dialogRef.current?.showModal();
     } else {
       dialogRef.current?.close();
@@ -133,6 +144,7 @@ export default function RelationshipDialog({
       sourceRole,
       targetRole,
       notes: notes.trim(),
+      clarity,
     });
   };
 
@@ -342,6 +354,34 @@ export default function RelationshipDialog({
             className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
             placeholder="Integration details, constraints..."
           />
+        </div>
+
+        {/* Clarity */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+            Clarity
+          </p>
+          <div className="flex gap-2">
+            {CLARITY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setClarity(clarity === opt.value ? undefined : opt.value)}
+                className={`
+                  flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 text-xs font-semibold transition-colors
+                  ${clarity === opt.value
+                    ? opt.activeClass
+                    : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-white'}
+                `}
+              >
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: opt.color }}
+                />
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Actions */}

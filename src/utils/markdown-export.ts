@@ -42,8 +42,8 @@ export function generateMarkdown(
   // Directional relationships
   lines.push('## Relationships\n');
   if (directional.length > 0) {
-    lines.push('| # | Upstream | Downstream | Type | Notes |');
-    lines.push('|---|----------|------------|------|-------|');
+    lines.push('| # | Upstream | Downstream | Type | Clarity | Notes |');
+    lines.push('|---|----------|------------|------|---------|-------|');
     directional.forEach((edge, i) => {
       const data = edge.data as RelationshipData;
       const baseMeta = RELATIONSHIP_META[data.relationshipType];
@@ -63,7 +63,7 @@ export function generateMarkdown(
         parts.push(`D:${m.abbreviation}`);
       }
       lines.push(
-        `| ${i + 1} | ${upstream} | ${downstream} | ${parts.join(' ')} | ${data.notes || '-'} |`
+        `| ${i + 1} | ${upstream} | ${downstream} | ${parts.join(' ')} | ${data.clarity ?? '-'} | ${data.notes || '-'} |`
       );
     });
     lines.push('');
@@ -74,15 +74,15 @@ export function generateMarkdown(
   // Symmetric relationships
   if (symmetric.length > 0) {
     lines.push('### Symmetric Relationships\n');
-    lines.push('| # | Context A | Context B | Type | Notes |');
-    lines.push('|---|-----------|-----------|------|-------|');
+    lines.push('| # | Context A | Context B | Type | Clarity | Notes |');
+    lines.push('|---|-----------|-----------|------|---------|-------|');
     symmetric.forEach((edge, i) => {
       const data = edge.data as RelationshipData;
       const meta = RELATIONSHIP_META[data.relationshipType];
       const a = getNodeName(nodes, edge.source);
       const b = getNodeName(nodes, edge.target);
       lines.push(
-        `| ${i + 1} | ${a} | ${b} | ${meta.label} (${meta.abbreviation}) | ${data.notes || '-'} |`
+        `| ${i + 1} | ${a} | ${b} | ${meta.label} (${meta.abbreviation}) | ${data.clarity ?? '-'} | ${data.notes || '-'} |`
       );
     });
     lines.push('');

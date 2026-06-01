@@ -5,8 +5,21 @@ import {
   useReactFlow,
   type EdgeProps,
 } from '@xyflow/react';
-import type { RelationshipData, RelationshipType } from '../../types/context-map';
+import type { Clarity, RelationshipData, RelationshipType } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
+
+const CLARITY_STROKE: Record<string, { normal: string; selected: string }> = {
+  clear:              { normal: '#22c55e', selected: '#15803d' },
+  unsure:             { normal: '#3b82f6', selected: '#1d4ed8' },
+  'needs-improvement': { normal: '#ef4444', selected: '#b91c1c' },
+  none:               { normal: '#64748b', selected: '#3b82f6' },
+};
+
+function strokeColor(clarity: Clarity | undefined, selected: boolean | undefined): string {
+  const key = clarity ?? 'none';
+  const colors = CLARITY_STROKE[key] ?? CLARITY_STROKE.none;
+  return selected ? colors.selected : colors.normal;
+}
 
 let lastDragEndTime = 0;
 
@@ -152,7 +165,7 @@ export default function RelationshipEdge({
         id={id}
         path={edgePath}
         style={{
-          stroke: selected ? '#3b82f6' : '#64748b',
+          stroke: strokeColor(data?.clarity, selected),
           strokeWidth: selected ? 2.5 : 1.5,
         }}
         markerEnd={markerEnd}

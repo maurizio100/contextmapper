@@ -1,5 +1,6 @@
 import type {
   BoundedContextNode,
+  Clarity,
   RelationshipEdge,
   RelationshipData,
   RelationshipType,
@@ -223,6 +224,12 @@ function parseRelationships(
     return t === '-' || t === '' ? '' : t;
   };
 
+  const parseClarity = (cell: string): Clarity | undefined => {
+    const t = cell.trim();
+    if (t === 'clear' || t === 'unsure' || t === 'needs-improvement') return t;
+    return undefined;
+  };
+
   // Directional: | # | Upstream | Downstream | Type | Notes |
   const dirTable = extractTable(directionalLines);
   if (dirTable) {
@@ -230,6 +237,7 @@ function parseRelationships(
     const upIdx = header.findIndex((h) => h.includes('upstream'));
     const downIdx = header.findIndex((h) => h.includes('downstream'));
     const typeIdx = header.findIndex((h) => h.includes('type'));
+    const clarityIdx = header.findIndex((h) => h.includes('clarity'));
     const notesIdx = header.findIndex((h) => h.includes('notes'));
 
     if (upIdx === -1 || downIdx === -1 || typeIdx === -1) {
@@ -240,6 +248,7 @@ function parseRelationships(
         const upstreamName = row[upIdx] ?? '';
         const downstreamName = row[downIdx] ?? '';
         const typeCell = row[typeIdx] ?? '';
+        const clarity = clarityIdx >= 0 ? parseClarity(row[clarityIdx] ?? '') : undefined;
         const notes = notesIdx >= 0 ? cleanNotes(row[notesIdx] ?? '') : '';
 
         const sourceId = resolve(upstreamName);
@@ -264,6 +273,7 @@ function parseRelationships(
           sourceRole: 'upstream',
           targetRole: 'downstream',
           notes,
+          clarity,
         };
         edges.push({
           id: generateId(),
@@ -283,6 +293,7 @@ function parseRelationships(
     const aIdx = header.findIndex((h) => h.includes('context a') || h === 'a');
     const bIdx = header.findIndex((h) => h.includes('context b') || h === 'b');
     const typeIdx = header.findIndex((h) => h.includes('type'));
+    const clarityIdx = header.findIndex((h) => h.includes('clarity'));
     const notesIdx = header.findIndex((h) => h.includes('notes'));
 
     if (aIdx === -1 || bIdx === -1 || typeIdx === -1) {
@@ -293,6 +304,7 @@ function parseRelationships(
         const aName = row[aIdx] ?? '';
         const bName = row[bIdx] ?? '';
         const typeCell = row[typeIdx] ?? '';
+        const clarity = clarityIdx >= 0 ? parseClarity(row[clarityIdx] ?? '') : undefined;
         const notes = notesIdx >= 0 ? cleanNotes(row[notesIdx] ?? '') : '';
 
         const sourceId = resolve(aName);
@@ -315,6 +327,7 @@ function parseRelationships(
           sourceRole: 'none',
           targetRole: 'none',
           notes,
+          clarity,
         };
         edges.push({
           id: generateId(),
