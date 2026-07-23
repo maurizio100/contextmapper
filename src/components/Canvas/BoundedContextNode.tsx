@@ -1,9 +1,39 @@
 import { memo, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import type { BoundedContextNode } from '../../types/context-map';
+import type { BoundedContextNode, HandleSide } from '../../types/context-map';
+
+const SIDE_POSITION: Record<HandleSide, Position> = {
+  top: Position.Top,
+  right: Position.Right,
+  bottom: Position.Bottom,
+  left: Position.Left,
+};
+
+const HANDLE_CLASS =
+  '!w-3 !h-3 !bg-gray-300 !border-2 !border-gray-400 hover:!bg-blue-400 hover:!border-blue-500 !transition-colors';
+
+/** Anchors evenly spaced along one side: fractions (i+1)/(count+1). */
+function sideHandles(side: HandleSide, count: number) {
+  const n = Math.max(1, count);
+  const horizontal = side === 'top' || side === 'bottom';
+  return Array.from({ length: n }, (_, i) => {
+    const pct = ((i + 1) / (n + 1)) * 100;
+    return (
+      <Handle
+        key={`${side}-${i}`}
+        type="source"
+        position={SIDE_POSITION[side]}
+        id={`${side}-${i}`}
+        className={HANDLE_CLASS}
+        style={horizontal ? { left: `${pct}%` } : { top: `${pct}%` }}
+      />
+    );
+  });
+}
 
 function BoundedContextNodeComponent({ data, selected }: NodeProps<BoundedContextNode>) {
   const [collapsed, setCollapsed] = useState(false);
+  const counts = data.handleCounts ?? { top: 1, right: 1, bottom: 1, left: 1 };
 
   return (
     <div
@@ -44,14 +74,10 @@ function BoundedContextNodeComponent({ data, selected }: NodeProps<BoundedContex
           {data.description}
         </div>
       )}
-      <Handle type="source" position={Position.Top} id="top"
-        className="!w-3 !h-3 !bg-gray-300 !border-2 !border-gray-400 hover:!bg-blue-400 hover:!border-blue-500 !transition-colors" />
-      <Handle type="source" position={Position.Right} id="right"
-        className="!w-3 !h-3 !bg-gray-300 !border-2 !border-gray-400 hover:!bg-blue-400 hover:!border-blue-500 !transition-colors" />
-      <Handle type="source" position={Position.Bottom} id="bottom"
-        className="!w-3 !h-3 !bg-gray-300 !border-2 !border-gray-400 hover:!bg-blue-400 hover:!border-blue-500 !transition-colors" />
-      <Handle type="source" position={Position.Left} id="left"
-        className="!w-3 !h-3 !bg-gray-300 !border-2 !border-gray-400 hover:!bg-blue-400 hover:!border-blue-500 !transition-colors" />
+      {sideHandles('top', counts.top)}
+      {sideHandles('right', counts.right)}
+      {sideHandles('bottom', counts.bottom)}
+      {sideHandles('left', counts.left)}
     </div>
   );
 }

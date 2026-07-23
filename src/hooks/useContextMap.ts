@@ -15,7 +15,7 @@ import type {
   PendingConnection,
 } from '../types/context-map';
 import { generateId } from '../utils/id-generator';
-import { layoutGrid, resolveDraggedNode } from '../utils/layout';
+import { assignEdgeAnchors, layoutGrid, resolveDraggedNode } from '../utils/layout';
 
 const STORAGE_KEY = 'context-map-data';
 
@@ -24,11 +24,25 @@ interface StoredData {
   edges: RelationshipEdge[];
 }
 
+const LEGACY_HANDLES = new Set(['top', 'right', 'bottom', 'left']);
+
+/** Map pre-multi-anchor handle ids ("right") onto the new scheme ("right-0"). */
+function migrateHandle(handle: string | null | undefined): string | undefined {
+  if (!handle) return handle ?? undefined;
+  return LEGACY_HANDLES.has(handle) ? `${handle}-0` : handle;
+}
+
 function loadFromStorage(): StoredData | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const data = JSON.parse(raw) as StoredData;
+    data.edges = data.edges?.map((e) => ({
+      ...e,
+      sourceHandle: migrateHandle(e.sourceHandle),
+      targetHandle: migrateHandle(e.targetHandle),
+    }));
+    return data;
   } catch {
     return null;
   }
@@ -52,8 +66,14 @@ export function useContextMap() {
   const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
 
-  // Auto-save
+  // Keep the latest nodes/edges accessible to callbacks that need both at once.
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+
+  // Auto-save + mirror the latest state into refs.
   useEffect(() => {
+    nodesRef.current = nodes;
+    edgesRef.current = edges;
     saveToStorage(nodes, edges);
   }, [nodes, edges]);
 
@@ -139,9 +159,13 @@ export function useContextMap() {
     []
   );
 
-  // Re-pack all nodes into a tidy, overlap-free grid.
+  // Re-pack all nodes into a tidy, overlap-free grid, then spread each
+  // context's edges evenly across its sides.
   const tidyLayout = useCallback(() => {
-    setNodes((nds) => layoutGrid(nds));
+    const laidOut = layoutGrid(nodesRef.current);
+    const anchored = assignEdgeAnchors(laidOut, edgesRef.current);
+    setNodes(anchored.nodes);
+    setEdges(anchored.edges);
   }, []);
 
   // After a drag, push the node clear of any it landed on top of.

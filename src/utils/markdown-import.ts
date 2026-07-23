@@ -7,7 +7,7 @@ import type {
 } from '../types/context-map';
 import { CONTEXT_COLORS, RELATIONSHIP_META } from '../constants/relationships';
 import { generateId } from './id-generator';
-import { layoutGrid } from './layout';
+import { assignEdgeAnchors, layoutGrid } from './layout';
 
 export interface ImportResult {
   nodes: BoundedContextNode[];
@@ -335,12 +335,14 @@ export function parseMarkdown(content: string): ImportResult {
   const { nodes, byName, warnings: ctxWarnings } = parseContexts(lines);
   const { edges, warnings: relWarnings } = parseRelationships(lines, byName);
 
-  // Lay out nodes since markdown carries no positions, ensuring no overlaps.
+  // Lay out nodes since markdown carries no positions, ensuring no overlaps,
+  // then spread each context's edges evenly around its sides.
   const laidOut = layoutGrid(nodes);
+  const anchored = assignEdgeAnchors(laidOut, edges);
 
   return {
-    nodes: laidOut,
-    edges,
+    nodes: anchored.nodes,
+    edges: anchored.edges,
     warnings: [...ctxWarnings, ...relWarnings],
   };
 }

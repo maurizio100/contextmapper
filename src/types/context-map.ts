@@ -19,11 +19,22 @@ export type Role = 'upstream' | 'downstream' | 'none';
 
 export type Clarity = 'clear' | 'unsure' | 'needs-improvement';
 
+export type HandleSide = 'top' | 'right' | 'bottom' | 'left';
+
+/** How many connection anchors to render on each side of a context. */
+export type HandleCounts = Record<HandleSide, number>;
+
 export interface BoundedContextData {
   [key: string]: unknown;
   name: string;
   description: string;
   color: string;
+  /**
+   * Number of anchor points to expose per side, computed by the layout so that
+   * incident edges spread evenly around the node instead of stacking on one
+   * handle. Absent for freshly created nodes (they render a single anchor/side).
+   */
+  handleCounts?: HandleCounts;
 }
 
 export interface ControlOffset {

@@ -1,4 +1,9 @@
-import type { BoundedContextNode } from '../types/context-map';
+import type {
+  BoundedContextNode,
+  HandleCounts,
+  HandleSide,
+  RelationshipEdge,
+} from '../types/context-map';
 
 // Mirrors the sizing constraints of BoundedContextNode (min-w-[180px]
 // max-w-[240px] plus a header and an optional 3-line description). Used to
@@ -63,6 +68,114 @@ export function layoutGrid(nodes: BoundedContextNode[]): BoundedContextNode[] {
     rowTop += rowHeight + NODE_GAP_Y;
   }
   return result;
+}
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+function nodeCenter(node: BoundedContextNode, size: Size): Point {
+  return {
+    x: node.position.x + size.width / 2,
+    y: node.position.y + size.height / 2,
+  };
+}
+
+/** Which side of the node at `from` points towards `to`. */
+function facingSide(from: Point, to: Point): HandleSide {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? 'right' : 'left';
+  return dy >= 0 ? 'bottom' : 'top';
+}
+
+/** Handle id for the i-th anchor on a side, e.g. "right-0". */
+export function handleId(side: HandleSide, index: number): string {
+  return `${side}-${index}`;
+}
+
+interface Endpoint {
+  edgeId: string;
+  role: 'source' | 'target';
+  /** Coordinate along the side used to order anchors and reduce crossings. */
+  cross: number;
+}
+
+/**
+ * Assigns each edge a source/target anchor so that edges leave a context from
+ * the side facing their counterpart and, when several share a side, spread out
+ * evenly across it. Returns new node objects (carrying per-side anchor counts)
+ * and new edge objects (carrying sourceHandle/targetHandle). Pure.
+ */
+export function assignEdgeAnchors(
+  nodes: BoundedContextNode[],
+  edges: RelationshipEdge[]
+): { nodes: BoundedContextNode[]; edges: RelationshipEdge[] } {
+  if (nodes.length === 0) return { nodes, edges };
+
+  const centers = new Map<string, Point>();
+  for (const n of nodes) centers.set(n.id, nodeCenter(n, getNodeSize(n)));
+
+  // Group every edge endpoint by the (node, side) it should attach to.
+  const groups = new Map<string, Endpoint[]>();
+  const groupKey = (nodeId: string, side: HandleSide) => `${nodeId}|${side}`;
+  const add = (nodeId: string, side: HandleSide, ep: Endpoint) => {
+    const key = groupKey(nodeId, side);
+    const list = groups.get(key);
+    if (list) list.push(ep);
+    else groups.set(key, [ep]);
+  };
+
+  for (const e of edges) {
+    const sc = centers.get(e.source);
+    const tc = centers.get(e.target);
+    if (!sc || !tc) continue;
+    const sSide = facingSide(sc, tc);
+    const tSide = facingSide(tc, sc);
+    const sCross = sSide === 'top' || sSide === 'bottom' ? tc.x : tc.y;
+    const tCross = tSide === 'top' || tSide === 'bottom' ? sc.x : sc.y;
+    add(e.source, sSide, { edgeId: e.id, role: 'source', cross: sCross });
+    add(e.target, tSide, { edgeId: e.id, role: 'target', cross: tCross });
+  }
+
+  // Within each side, order endpoints and hand them evenly spaced anchor slots.
+  const counts = new Map<string, HandleCounts>();
+  const handles = new Map<string, { source?: string; target?: string }>();
+
+  for (const [key, eps] of groups) {
+    const sep = key.lastIndexOf('|');
+    const nodeId = key.slice(0, sep);
+    const side = key.slice(sep + 1) as HandleSide;
+
+    eps.sort((a, b) => a.cross - b.cross);
+
+    const c = counts.get(nodeId) ?? { top: 0, right: 0, bottom: 0, left: 0 };
+    c[side] = eps.length;
+    counts.set(nodeId, c);
+
+    eps.forEach((ep, i) => {
+      const id = handleId(side, i);
+      const h = handles.get(ep.edgeId) ?? {};
+      if (ep.role === 'source') h.source = id;
+      else h.target = id;
+      handles.set(ep.edgeId, h);
+    });
+  }
+
+  const newNodes = nodes.map((n) => {
+    const c = counts.get(n.id);
+    if (!c) return n;
+    return { ...n, data: { ...n.data, handleCounts: c } };
+  });
+
+  const newEdges = edges.map((e) => {
+    const h = handles.get(e.id);
+    if (!h) return e;
+    return { ...e, sourceHandle: h.source, targetHandle: h.target };
+  });
+
+  return { nodes: newNodes, edges: newEdges };
 }
 
 interface Rect extends Size {
