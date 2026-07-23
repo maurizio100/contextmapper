@@ -2,12 +2,13 @@ import { useReactFlow } from '@xyflow/react';
 
 interface ToolbarProps {
   onAddContext: () => void;
+  onTidy: () => void;
   onImport: () => void;
   onExport: () => void;
   onExportPng: () => void;
 }
 
-export default function Toolbar({ onAddContext, onImport, onExport, onExportPng }: ToolbarProps) {
+export default function Toolbar({ onAddContext, onTidy, onImport, onExport, onExportPng }: ToolbarProps) {
   const { fitView } = useReactFlow();
 
   return (
@@ -26,6 +27,12 @@ export default function Toolbar({ onAddContext, onImport, onExport, onExportPng 
         className="px-3 py-2 text-sm font-medium rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
       >
         Fit View
+      </button>
+      <button
+        onClick={onTidy}
+        className="px-3 py-2 text-sm font-medium rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm transition-colors"
+      >
+        Tidy Up
       </button>
       <button
         onClick={onImport}

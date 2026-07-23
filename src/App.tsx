@@ -24,6 +24,8 @@ function AppInner() {
     addEdge,
     updateEdge,
     replaceAll,
+    tidyLayout,
+    separateNode,
     pendingConnection,
     clearPendingConnection,
     editingEdgeId,
@@ -40,9 +42,15 @@ function AppInner() {
     hasExistingMap: nodes.length > 0 || edges.length > 0,
   });
   const reactFlowInstance = useReactFlow();
-  const { getViewport } = reactFlowInstance;
+  const { getViewport, fitView } = reactFlowInstance;
 
   const [showContextDialog, setShowContextDialog] = useState(false);
+
+  // --- Tidy Up: re-pack into an overlap-free grid, then refit ---
+  const handleTidy = useCallback(() => {
+    tidyLayout();
+    requestAnimationFrame(() => fitView({ padding: 0.2 }));
+  }, [tidyLayout, fitView]);
 
   // --- Add Context ---
   const handleAddContext = useCallback(() => {
@@ -146,9 +154,11 @@ function AppInner() {
         onReconnect={onReconnect}
         onEdgeClick={handleEdgeClick}
         onNodeDoubleClick={handleNodeDoubleClick}
+        onNodeDragStop={separateNode}
       />
       <Toolbar
         onAddContext={handleAddContext}
+        onTidy={handleTidy}
         onImport={importMarkdown}
         onExport={exportMarkdown}
         onExportPng={() => exportToPng(reactFlowInstance)}

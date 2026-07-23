@@ -34,6 +34,7 @@ interface CanvasProps {
   onReconnect: (oldEdge: RelationshipEdge, newConnection: Connection) => void;
   onEdgeClick: (edgeId: string) => void;
   onNodeDoubleClick: (nodeId: string) => void;
+  onNodeDragStop: (nodeId: string) => void;
 }
 
 export default function Canvas({
@@ -45,6 +46,7 @@ export default function Canvas({
   onReconnect,
   onEdgeClick,
   onNodeDoubleClick,
+  onNodeDragStop,
 }: CanvasProps) {
   return (
     <ReactFlow
@@ -60,6 +62,7 @@ export default function Canvas({
       edgeTypes={edgeTypes}
       onEdgeClick={(_event, edge) => onEdgeClick(edge.id)}
       onNodeDoubleClick={(_event, node) => onNodeDoubleClick(node.id)}
+      onNodeDragStop={(_event, node) => onNodeDragStop(node.id)}
       fitView
       deleteKeyCode={['Backspace', 'Delete']}
       className="bg-gray-50"

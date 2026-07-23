@@ -15,6 +15,7 @@ import type {
   PendingConnection,
 } from '../types/context-map';
 import { generateId } from '../utils/id-generator';
+import { layoutGrid, resolveDraggedNode } from '../utils/layout';
 
 const STORAGE_KEY = 'context-map-data';
 
@@ -138,6 +139,25 @@ export function useContextMap() {
     []
   );
 
+  // Re-pack all nodes into a tidy, overlap-free grid.
+  const tidyLayout = useCallback(() => {
+    setNodes((nds) => layoutGrid(nds));
+  }, []);
+
+  // After a drag, push the node clear of any it landed on top of.
+  const separateNode = useCallback((nodeId: string) => {
+    setNodes((nds) => {
+      const dragged = nds.find((n) => n.id === nodeId);
+      if (!dragged) return nds;
+      const others = nds.filter((n) => n.id !== nodeId);
+      const pos = resolveDraggedNode(dragged, others);
+      if (pos.x === dragged.position.x && pos.y === dragged.position.y) {
+        return nds;
+      }
+      return nds.map((n) => (n.id === nodeId ? { ...n, position: pos } : n));
+    });
+  }, []);
+
   const clearPendingConnection = useCallback(() => {
     setPendingConnection(null);
   }, []);
@@ -162,6 +182,8 @@ export function useContextMap() {
     addEdge,
     updateEdge,
     replaceAll,
+    tidyLayout,
+    separateNode,
     pendingConnection,
     clearPendingConnection,
     editingEdgeId,

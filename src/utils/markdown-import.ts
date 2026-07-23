@@ -7,26 +7,12 @@ import type {
 } from '../types/context-map';
 import { CONTEXT_COLORS, RELATIONSHIP_META } from '../constants/relationships';
 import { generateId } from './id-generator';
+import { layoutGrid } from './layout';
 
 export interface ImportResult {
   nodes: BoundedContextNode[];
   edges: RelationshipEdge[];
   warnings: string[];
-}
-
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 80;
-const NODE_GAP_X = 80;
-const NODE_GAP_Y = 60;
-
-function gridPosition(index: number, total: number): { x: number; y: number } {
-  const cols = Math.max(1, Math.ceil(Math.sqrt(total)));
-  const col = index % cols;
-  const row = Math.floor(index / cols);
-  return {
-    x: col * (NODE_WIDTH + NODE_GAP_X),
-    y: row * (NODE_HEIGHT + NODE_GAP_Y),
-  };
 }
 
 function abbreviationToType(): Map<string, RelationshipType> {
@@ -349,13 +335,11 @@ export function parseMarkdown(content: string): ImportResult {
   const { nodes, byName, warnings: ctxWarnings } = parseContexts(lines);
   const { edges, warnings: relWarnings } = parseRelationships(lines, byName);
 
-  // Lay out nodes in a grid since markdown carries no positions.
-  nodes.forEach((node, i) => {
-    node.position = gridPosition(i, nodes.length);
-  });
+  // Lay out nodes since markdown carries no positions, ensuring no overlaps.
+  const laidOut = layoutGrid(nodes);
 
   return {
-    nodes,
+    nodes: laidOut,
     edges,
     warnings: [...ctxWarnings, ...relWarnings],
   };
