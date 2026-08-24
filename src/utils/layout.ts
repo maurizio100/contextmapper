@@ -1,9 +1,12 @@
+import dagre from '@dagrejs/dagre';
 import type {
   BoundedContextNode,
-  HandleCounts,
   HandleSide,
   RelationshipEdge,
 } from '../types/context-map';
+
+/** Fixed number of connection anchors rendered on every side of a context. */
+export const ANCHORS_PER_SIDE = 3;
 
 // Mirrors the sizing constraints of BoundedContextNode (min-w-[180px]
 // max-w-[240px] plus a header and an optional 3-line description). Used to
@@ -70,6 +73,59 @@ export function layoutGrid(nodes: BoundedContextNode[]): BoundedContextNode[] {
   return result;
 }
 
+/**
+ * Direction an edge implies for ranking: from the upstream context to the
+ * downstream one. Symmetric relationships (Partnership, Shared Kernel, …) carry
+ * no direction, so we keep the source→target order purely as a connectivity
+ * link. Downstream-as-source edges are flipped so upstream still ranks higher.
+ */
+function edgeDirection(e: RelationshipEdge): { from: string; to: string } {
+  if (e.data?.sourceRole === 'downstream') {
+    return { from: e.target, to: e.source };
+  }
+  return { from: e.source, to: e.target };
+}
+
+/**
+ * Arranges nodes with dagre's layered algorithm: connected contexts sit near
+ * each other, upstream contexts rank above their downstream counterparts, and
+ * the crossing-minimisation heuristic keeps edges from spanning the whole map.
+ * Falls back to the plain grid when there are no edges to rank by. Pure.
+ */
+export function layoutDirected(
+  nodes: BoundedContextNode[],
+  edges: RelationshipEdge[]
+): BoundedContextNode[] {
+  if (nodes.length === 0) return nodes;
+  if (edges.length === 0) return layoutGrid(nodes);
+
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'TB', nodesep: NODE_GAP_X, ranksep: NODE_GAP_Y });
+  g.setDefaultEdgeLabel(() => ({}));
+
+  const known = new Set(nodes.map((n) => n.id));
+  for (const n of nodes) {
+    const { width, height } = getNodeSize(n);
+    g.setNode(n.id, { width, height });
+  }
+  for (const e of edges) {
+    const { from, to } = edgeDirection(e);
+    if (known.has(from) && known.has(to)) g.setEdge(from, to);
+  }
+
+  dagre.layout(g);
+
+  // dagre reports node centres; React Flow positions are top-left corners.
+  return nodes.map((n) => {
+    const laid = g.node(n.id);
+    if (!laid) return n;
+    return {
+      ...n,
+      position: { x: laid.x - laid.width / 2, y: laid.y - laid.height / 2 },
+    };
+  });
+}
+
 interface Point {
   x: number;
   y: number;
@@ -103,10 +159,23 @@ interface Endpoint {
 }
 
 /**
+ * Maps the i-th of `n` endpoints sharing a side onto one of the fixed anchor
+ * slots (0…ANCHORS_PER_SIDE-1). A lone edge takes the centre slot; several
+ * spread from the first slot to the last. When more edges share a side than
+ * there are slots, some slots carry more than one edge.
+ */
+function slotFor(i: number, n: number): number {
+  if (n <= 1) return Math.floor(ANCHORS_PER_SIDE / 2);
+  const slot = Math.round((i * (ANCHORS_PER_SIDE - 1)) / (n - 1));
+  return Math.min(ANCHORS_PER_SIDE - 1, Math.max(0, slot));
+}
+
+/**
  * Assigns each edge a source/target anchor so that edges leave a context from
  * the side facing their counterpart and, when several share a side, spread out
- * evenly across it. Returns new node objects (carrying per-side anchor counts)
- * and new edge objects (carrying sourceHandle/targetHandle). Pure.
+ * across the fixed anchors on that side. Nodes always expose ANCHORS_PER_SIDE
+ * anchors per side, so this only rewrites edge handles — nodes pass through
+ * unchanged. Returns new edge objects (carrying sourceHandle/targetHandle). Pure.
  */
 export function assignEdgeAnchors(
   nodes: BoundedContextNode[],
@@ -139,23 +208,17 @@ export function assignEdgeAnchors(
     add(e.target, tSide, { edgeId: e.id, role: 'target', cross: tCross });
   }
 
-  // Within each side, order endpoints and hand them evenly spaced anchor slots.
-  const counts = new Map<string, HandleCounts>();
+  // Within each side, order endpoints and snap them onto the fixed anchor slots.
   const handles = new Map<string, { source?: string; target?: string }>();
 
   for (const [key, eps] of groups) {
     const sep = key.lastIndexOf('|');
-    const nodeId = key.slice(0, sep);
     const side = key.slice(sep + 1) as HandleSide;
 
     eps.sort((a, b) => a.cross - b.cross);
 
-    const c = counts.get(nodeId) ?? { top: 0, right: 0, bottom: 0, left: 0 };
-    c[side] = eps.length;
-    counts.set(nodeId, c);
-
     eps.forEach((ep, i) => {
-      const id = handleId(side, i);
+      const id = handleId(side, slotFor(i, eps.length));
       const h = handles.get(ep.edgeId) ?? {};
       if (ep.role === 'source') h.source = id;
       else h.target = id;
@@ -163,19 +226,13 @@ export function assignEdgeAnchors(
     });
   }
 
-  const newNodes = nodes.map((n) => {
-    const c = counts.get(n.id);
-    if (!c) return n;
-    return { ...n, data: { ...n.data, handleCounts: c } };
-  });
-
   const newEdges = edges.map((e) => {
     const h = handles.get(e.id);
     if (!h) return e;
     return { ...e, sourceHandle: h.source, targetHandle: h.target };
   });
 
-  return { nodes: newNodes, edges: newEdges };
+  return { nodes, edges: newEdges };
 }
 
 interface Rect extends Size {

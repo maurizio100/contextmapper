@@ -15,7 +15,12 @@ import type {
   PendingConnection,
 } from '../types/context-map';
 import { generateId } from '../utils/id-generator';
-import { assignEdgeAnchors, layoutGrid, resolveDraggedNode } from '../utils/layout';
+import {
+  ANCHORS_PER_SIDE,
+  assignEdgeAnchors,
+  layoutDirected,
+  resolveDraggedNode,
+} from '../utils/layout';
 
 const STORAGE_KEY = 'context-map-data';
 
@@ -25,11 +30,23 @@ interface StoredData {
 }
 
 const LEGACY_HANDLES = new Set(['top', 'right', 'bottom', 'left']);
+const ANCHOR_HANDLE = /^(top|right|bottom|left)-(\d+)$/;
 
-/** Map pre-multi-anchor handle ids ("right") onto the new scheme ("right-0"). */
+/**
+ * Normalise stored handle ids onto the current fixed-anchor scheme: map
+ * pre-multi-anchor ids ("right" → "right-0") and clamp any anchor index left
+ * over from the old dynamic scheme into the fixed range (e.g. "right-4" →
+ * "right-2"), so edges never point at an anchor the node no longer renders.
+ */
 function migrateHandle(handle: string | null | undefined): string | undefined {
   if (!handle) return handle ?? undefined;
-  return LEGACY_HANDLES.has(handle) ? `${handle}-0` : handle;
+  if (LEGACY_HANDLES.has(handle)) return `${handle}-0`;
+  const m = ANCHOR_HANDLE.exec(handle);
+  if (m) {
+    const idx = Math.min(ANCHORS_PER_SIDE - 1, Number(m[2]));
+    return `${m[1]}-${idx}`;
+  }
+  return handle;
 }
 
 function loadFromStorage(): StoredData | null {
@@ -159,10 +176,11 @@ export function useContextMap() {
     []
   );
 
-  // Re-pack all nodes into a tidy, overlap-free grid, then spread each
-  // context's edges evenly across its sides.
+  // Re-pack nodes with a connectivity-aware layered layout (connected contexts
+  // sit close, upstream above downstream), then spread each context's edges
+  // evenly across its sides.
   const tidyLayout = useCallback(() => {
-    const laidOut = layoutGrid(nodesRef.current);
+    const laidOut = layoutDirected(nodesRef.current, edgesRef.current);
     const anchored = assignEdgeAnchors(laidOut, edgesRef.current);
     setNodes(anchored.nodes);
     setEdges(anchored.edges);

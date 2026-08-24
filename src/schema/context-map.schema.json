@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contextmapper.app/schemas/context-map.schema.json",
+  "title": "Context Map",
+  "description": "A bounded-context map exported by Context Mapper: bounded contexts (nodes) and the strategic DDD relationships between them (edges).",
+  "type": "object",
+  "required": ["version", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer to this schema, used by editors for validation."
+    },
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "On-disk schema version. Bumped only on non-backwards-compatible changes."
+    },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "position": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "relationshipType": {
+      "type": "string",
+      "enum": [
+        "SharedKernel",
+        "CustomerSupplier",
+        "Conformist",
+        "AnticorruptionLayer",
+        "OpenHostService",
+        "PublishedLanguage",
+        "Partnership",
+        "SeparateWays",
+        "BigBallOfMud"
+      ]
+    },
+    "role": {
+      "type": "string",
+      "enum": ["upstream", "downstream", "none"]
+    },
+    "clarity": {
+      "type": "string",
+      "enum": ["clear", "unsure", "needs-improvement"]
+    },
+    "boundedContextData": {
+      "type": "object",
+      "required": ["name", "description", "color"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "color": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "position", "data"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "const": "boundedContext" },
+        "position": { "$ref": "#/$defs/position" },
+        "data": { "$ref": "#/$defs/boundedContextData" },
+        "width": { "type": ["number", "null"] },
+        "height": { "type": ["number", "null"] },
+        "selected": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "relationshipData": {
+      "type": "object",
+      "required": ["relationshipType", "sourceRole", "targetRole", "notes"],
+      "properties": {
+        "relationshipType": { "$ref": "#/$defs/relationshipType" },
+        "upstreamType": {
+          "anyOf": [{ "$ref": "#/$defs/relationshipType" }, { "type": "null" }]
+        },
+        "downstreamType": {
+          "anyOf": [{ "$ref": "#/$defs/relationshipType" }, { "type": "null" }]
+        },
+        "sourceRole": { "$ref": "#/$defs/role" },
+        "targetRole": { "$ref": "#/$defs/role" },
+        "notes": { "type": "string" },
+        "clarity": { "$ref": "#/$defs/clarity" },
+        "controlOffset": { "$ref": "#/$defs/position" }
+      },
+      "additionalProperties": true
+    },
+    "edge": {
+      "type": "object",
+      "required": ["id", "source", "target"],
+      "properties": {
+        "id": { "type": "string" },
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "sourceHandle": { "type": ["string", "null"] },
+        "targetHandle": { "type": ["string", "null"] },
+        "type": { "const": "relationship" },
+        "data": { "$ref": "#/$defs/relationshipData" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

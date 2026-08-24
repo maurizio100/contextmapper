@@ -58,6 +58,7 @@ export default function Canvas({
       onReconnect={onReconnect}
       edgesReconnectable
       connectionMode={ConnectionMode.Loose}
+      connectionRadius={45}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       onEdgeClick={(_event, edge) => onEdgeClick(edge.id)}

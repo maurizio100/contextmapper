@@ -7,6 +7,9 @@ import RelationshipDialog from './components/Dialogs/RelationshipDialog';
 import { useContextMap } from './hooks/useContextMap';
 import { useMarkdownExport } from './hooks/useMarkdownExport';
 import { useMarkdownImport } from './hooks/useMarkdownImport';
+import { useJsonExport } from './hooks/useJsonExport';
+import { useJsonImport } from './hooks/useJsonImport';
+import { useFocusMode } from './hooks/useFocusMode';
 import type { BoundedContextData, RelationshipData } from './types/context-map';
 import { exportToPng } from './utils/png-export';
 import { wasDraggingRecently } from './components/Canvas/RelationshipEdge';
@@ -41,8 +44,35 @@ function AppInner() {
     replaceAll,
     hasExistingMap: nodes.length > 0 || edges.length > 0,
   });
+  const { exportJson } = useJsonExport(nodes, edges);
+  const { importJson } = useJsonImport({
+    replaceAll,
+    hasExistingMap: nodes.length > 0 || edges.length > 0,
+  });
   const reactFlowInstance = useReactFlow();
   const { getViewport, fitView } = reactFlowInstance;
+
+  const {
+    isFocused,
+    visibleNodes,
+    visibleEdges,
+    visibleCount,
+    hiddenCount,
+    selectedCount,
+    focusOnSelection,
+    clearFocus,
+  } = useFocusMode(nodes, edges);
+
+  // --- Focus: restrict the canvas to the selection, then refit ---
+  const handleFocus = useCallback(() => {
+    focusOnSelection();
+    requestAnimationFrame(() => fitView({ padding: 0.2 }));
+  }, [focusOnSelection, fitView]);
+
+  const handleClearFocus = useCallback(() => {
+    clearFocus();
+    requestAnimationFrame(() => fitView({ padding: 0.2 }));
+  }, [clearFocus, fitView]);
 
   const [showContextDialog, setShowContextDialog] = useState(false);
 
@@ -146,8 +176,8 @@ function AppInner() {
   return (
     <div className="w-full h-screen relative">
       <Canvas
-        nodes={nodes}
-        edges={edges}
+        nodes={visibleNodes}
+        edges={visibleEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -161,7 +191,15 @@ function AppInner() {
         onTidy={handleTidy}
         onImport={importMarkdown}
         onExport={exportMarkdown}
+        onImportJson={importJson}
+        onExportJson={exportJson}
         onExportPng={() => exportToPng(reactFlowInstance)}
+        onFocus={handleFocus}
+        onClearFocus={handleClearFocus}
+        isFocused={isFocused}
+        canFocus={selectedCount > 0}
+        visibleCount={visibleCount}
+        hiddenCount={hiddenCount}
       />
 
       <ContextDialog
