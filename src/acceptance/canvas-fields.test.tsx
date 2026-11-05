@@ -72,13 +72,14 @@ describe('STORY-011 Describe a bounded context with canvas fields', () => {
     expect(panel().getByText('Nothing recorded yet.')).toBeInTheDocument();
   });
 
-  it('purpose and key terms survive generateJson then parseJson', () => {
-    seed([ctx('b', 'Billing', { purpose: PURPOSE, keyTerms: TERMS })]);
+  it('the canvas fields survive generateJson then parseJson', () => {
+    seed([ctx('b', 'Billing', { purpose: PURPOSE, keyTerms: TERMS, businessDecisions: DECISIONS })]);
 
     const imported = parseJson(generateJson(storedNodes(), []));
 
     expect(imported.warnings).toEqual([]);
     expect(imported.nodes[0].data.purpose).toBe(PURPOSE);
     expect(imported.nodes[0].data.keyTerms).toBe(TERMS);
+    expect(imported.nodes[0].data.businessDecisions).toBe(DECISIONS);
   });
 });
