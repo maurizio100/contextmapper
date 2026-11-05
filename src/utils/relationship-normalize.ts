@@ -1,4 +1,5 @@
-import type { RelationshipData, RelationshipEdge } from '../types/context-map';
+import { RelationshipType, type RelationshipData, type RelationshipEdge } from '../types/context-map';
+import { RELATIONSHIP_META } from '../constants/relationships';
 
 /**
  * Convert a legacy relationship shape — an upstream pattern (Open Host
@@ -9,6 +10,24 @@ import type { RelationshipData, RelationshipEdge } from '../types/context-map';
  * unchanged, so normalising is idempotent.
  */
 export function normalizeRelationshipData(data: RelationshipData): RelationshipData {
+  const category = RELATIONSHIP_META[data.relationshipType].category;
+
+  if (category === 'upstream-pattern') {
+    return {
+      ...data,
+      relationshipType: RelationshipType.CustomerSupplier,
+      upstreamType: data.upstreamType ?? data.relationshipType,
+    };
+  }
+
+  if (category === 'downstream-pattern') {
+    return {
+      ...data,
+      relationshipType: RelationshipType.CustomerSupplier,
+      downstreamType: data.downstreamType ?? data.relationshipType,
+    };
+  }
+
   return data;
 }
 
@@ -17,5 +36,6 @@ export function normalizeRelationshipData(data: RelationshipData): RelationshipD
  * without `data` passes through unchanged.
  */
 export function normalizeRelationshipEdge(edge: RelationshipEdge): RelationshipEdge {
-  return edge;
+  if (!edge.data) return edge;
+  return { ...edge, data: normalizeRelationshipData(edge.data) };
 }

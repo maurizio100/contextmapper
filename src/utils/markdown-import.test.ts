@@ -60,7 +60,8 @@ describe('Markdown export/import round-trip', () => {
 
     expect(result.edges).toHaveLength(1);
     const importedEdge = result.edges[0];
-    expect(importedEdge.data?.relationshipType).toBe('AnticorruptionLayer');
+    expect(importedEdge.data?.relationshipType).toBe('CustomerSupplier');
+    expect(importedEdge.data?.downstreamType).toBe('AnticorruptionLayer');
     expect(importedEdge.data?.sourceRole).toBe('upstream');
     expect(importedEdge.data?.targetRole).toBe('downstream');
     expect(importedEdge.data?.notes).toBe('translation layer needed');

@@ -8,6 +8,7 @@ import type {
 import { CONTEXT_COLORS, RELATIONSHIP_META } from '../constants/relationships';
 import { generateId } from './id-generator';
 import { assignEdgeAnchors, layoutGrid } from './layout';
+import { normalizeRelationshipData } from './relationship-normalize';
 
 export interface ImportResult {
   nodes: BoundedContextNode[];
@@ -252,7 +253,7 @@ function parseRelationships(
           continue;
         }
 
-        const data: RelationshipData = {
+        const data: RelationshipData = normalizeRelationshipData({
           relationshipType: base,
           upstreamType: upstreamType ?? null,
           downstreamType: downstreamType ?? null,
@@ -260,7 +261,7 @@ function parseRelationships(
           targetRole: 'downstream',
           notes,
           clarity,
-        };
+        });
         edges.push({
           id: generateId(),
           source: sourceId,
