@@ -7,7 +7,7 @@ describe('BoundedContextFields', () => {
   it('does not commit an empty name, and recovers once a valid name is typed again', () => {
     const node = aBoundedContext({ data: { name: 'Billing', description: '', color: '#3b82f6' } });
     const onUpdate = vi.fn();
-    render(<BoundedContextFields node={node} onUpdate={onUpdate} />);
+    render(<BoundedContextFields node={node} teams={[]} otherTeams={[]} onUpdate={onUpdate} />);
 
     const nameInput = screen.getByLabelText(/^name$/i);
 
@@ -25,12 +25,57 @@ describe('BoundedContextFields', () => {
       data: { name: 'Billing', description: '', color: '#3b82f6', domainClassification: 'core' },
     });
     const onUpdate = vi.fn();
-    render(<BoundedContextFields node={node} onUpdate={onUpdate} />);
+    render(<BoundedContextFields node={node} teams={[]} otherTeams={[]} onUpdate={onUpdate} />);
 
     fireEvent.change(screen.getByLabelText(/domain classification/i), { target: { value: '' } });
 
     const data = onUpdate.mock.calls[0][1];
     expect('domainClassification' in data).toBe(false);
     expect(data.name).toBe('Billing');
+  });
+
+  it('omits the owning team key when the field is cleared', () => {
+    const node = aBoundedContext({
+      data: { name: 'Billing', description: '', color: '#3b82f6', owningTeam: 'Team Payments' },
+    });
+    const onUpdate = vi.fn();
+    render(<BoundedContextFields node={node} teams={['Team Payments']} otherTeams={[]} onUpdate={onUpdate} />);
+
+    fireEvent.change(screen.getByLabelText(/owning team/i), { target: { value: '  ' } });
+
+    const data = onUpdate.mock.calls[0][1];
+    expect('owningTeam' in data).toBe(false);
+    expect(data.name).toBe('Billing');
+  });
+
+  it('lets the sole owner of a team change its spelling', () => {
+    const node = aBoundedContext({
+      data: { name: 'Billing', description: '', color: '#3b82f6', owningTeam: 'growth' },
+    });
+    const onUpdate = vi.fn();
+    render(<BoundedContextFields node={node} teams={['growth']} otherTeams={[]} onUpdate={onUpdate} />);
+
+    fireEvent.change(screen.getByLabelText(/owning team/i), { target: { value: 'Growth' } });
+
+    expect(onUpdate.mock.calls[0][1].owningTeam).toBe('Growth');
+  });
+
+  it('joins the spelling of a team another context owns', () => {
+    const node = aBoundedContext({
+      data: { name: 'Billing', description: '', color: '#3b82f6' },
+    });
+    const onUpdate = vi.fn();
+    render(
+      <BoundedContextFields
+        node={node}
+        teams={['Team Payments']}
+        otherTeams={['Team Payments']}
+        onUpdate={onUpdate}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText(/owning team/i), { target: { value: ' team payments ' } });
+
+    expect(onUpdate.mock.calls[0][1].owningTeam).toBe('Team Payments');
   });
 });

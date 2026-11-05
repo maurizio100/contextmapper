@@ -16,7 +16,7 @@ Terms specific to this context. Shared terms and cross-context collisions are in
 | Focus Mode | Restricting the canvas to one context plus its direct neighbours, or to exactly the selected contexts, without changing the underlying map. | owner-notes L4, code:useFocusMode.ts | The owner says "zoom into a context snippet" |
 | Lens | A way of viewing the context map that highlights the bounded contexts or relationships with one property value and dims the rest, without changing the map. | STORY-017 | Planned; one lens at a time (clarity, domain classification, owning team, relationship type) |
 | Modeller | The person using the app to draw a context map. | owner-notes L1 | Implied; the owner does not name the user |
-| Owning Team | The team responsible for a bounded context. | STORY-010 | Planned; optional, matched regardless of case |
+| Owning Team | The team responsible for a bounded context. | STORY-010 | Optional; names that differ only in case or surrounding spaces are the same team, and the first spelling on the map is kept |
 | Pattern Hint | A non-blocking notice on a relationship whose patterns contradict each other. | STORY-013 | Planned |
 | Relationship | A connection between two bounded contexts carrying a relationship type, upstream/downstream roles, notes and a clarity rating. | owner-notes L3, code:context-map.ts | |
 | Relationship Type | The strategic DDD pattern of a relationship: Shared Kernel, Customer-Supplier, Conformist, Anticorruption Layer, Open Host Service, Published Language, Partnership, Separate Ways or Big Ball of Mud. | code:relationships.ts | Grouped as symmetric, directional base, upstream pattern or downstream pattern |

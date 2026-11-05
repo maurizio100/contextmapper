@@ -12,6 +12,8 @@ interface SelectionPanelProps {
   selectedEdge: RelationshipEdge | null;
   sourceName: string;
   targetName: string;
+  teams: string[];
+  otherTeams: string[];
   onUpdateNode: (id: string, data: BoundedContextData) => void;
   onUpdateEdge: (id: string, data: RelationshipData) => void;
 }
@@ -28,6 +30,8 @@ export default function SelectionPanel({
   selectedEdge,
   sourceName,
   targetName,
+  teams,
+  otherTeams,
   onUpdateNode,
   onUpdateEdge,
 }: SelectionPanelProps) {
@@ -36,7 +40,13 @@ export default function SelectionPanel({
   return (
     <aside className="absolute top-0 right-0 h-full w-80 bg-white border-l border-gray-200 shadow-lg overflow-y-auto p-5 z-10">
       {selectedNode && (
-        <BoundedContextFields key={selectedNode.id} node={selectedNode} onUpdate={onUpdateNode} />
+        <BoundedContextFields
+          key={selectedNode.id}
+          node={selectedNode}
+          teams={teams}
+          otherTeams={otherTeams}
+          onUpdate={onUpdateNode}
+        />
       )}
       {selectedEdge && (
         <RelationshipFields

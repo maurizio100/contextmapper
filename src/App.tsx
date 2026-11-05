@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ReactFlowProvider, useReactFlow, type Connection } from '@xyflow/react';
 import Canvas from './components/Canvas/Canvas';
 import Toolbar from './components/Toolbar/Toolbar';
+import { teamsInUse } from './utils/teams';
 import SelectionPanel from './components/SelectionPanel/SelectionPanel';
 import { useContextMap } from './hooks/useContextMap';
 import { useMarkdownExport } from './hooks/useMarkdownExport';
@@ -126,12 +127,17 @@ function AppInner() {
   }, [addNode, getViewport]);
 
   // --- Selection panel: derived from the map's own selection, not a second copy of UI state ---
+  const teams = useMemo(() => teamsInUse(nodes), [nodes]);
   const selectedNodes = useMemo(() => nodes.filter((n) => n.selected), [nodes]);
   const selectedEdges = useMemo(() => edges.filter((e) => e.selected), [edges]);
   const selectedNode =
     selectedNodes.length === 1 && selectedEdges.length === 0 ? selectedNodes[0] : null;
   const selectedEdge =
     selectedEdges.length === 1 && selectedNodes.length === 0 ? selectedEdges[0] : null;
+  const otherTeams = useMemo(
+    () => teamsInUse(nodes.filter((n) => n.id !== selectedNode?.id)),
+    [nodes, selectedNode?.id]
+  );
   const selectedEdgeSourceName = selectedEdge
     ? nodes.find((n) => n.id === selectedEdge.source)?.data.name ?? ''
     : '';
@@ -214,6 +220,8 @@ function AppInner() {
         selectedEdge={selectedEdge}
         sourceName={selectedEdgeSourceName}
         targetName={selectedEdgeTargetName}
+        teams={teams}
+        otherTeams={otherTeams}
         onUpdateNode={updateNode}
         onUpdateEdge={updateEdge}
       />
