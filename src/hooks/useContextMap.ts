@@ -13,6 +13,7 @@ import type {
   BoundedContextData,
   RelationshipData,
   PendingConnection,
+  ControlOffset,
 } from '../types/context-map';
 import { generateId } from '../utils/id-generator';
 import {
@@ -198,6 +199,13 @@ export function useContextMap() {
     });
   }, []);
 
+  // Scaffold: real merge behaviour (mirroring updateEdge) is the implementor's
+  // work; this stub only gives bendEdge a stable identity and signature.
+  const bendEdge = useCallback((id: string, offset: ControlOffset) => {
+    void id;
+    void offset;
+  }, []);
+
   const clearPendingConnection = useCallback(() => {
     setPendingConnection(null);
   }, []);
@@ -224,6 +232,7 @@ export function useContextMap() {
     replaceAll,
     tidyLayout,
     separateNode,
+    bendEdge,
     pendingConnection,
     clearPendingConnection,
     editingEdgeId,
