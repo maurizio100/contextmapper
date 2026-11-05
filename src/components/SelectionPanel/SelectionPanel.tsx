@@ -13,6 +13,7 @@ interface SelectionPanelProps {
   sourceName: string;
   targetName: string;
   teams: string[];
+  otherTeams: string[];
   onUpdateNode: (id: string, data: BoundedContextData) => void;
   onUpdateEdge: (id: string, data: RelationshipData) => void;
 }
@@ -30,6 +31,7 @@ export default function SelectionPanel({
   sourceName,
   targetName,
   teams,
+  otherTeams,
   onUpdateNode,
   onUpdateEdge,
 }: SelectionPanelProps) {
@@ -42,6 +44,7 @@ export default function SelectionPanel({
           key={selectedNode.id}
           node={selectedNode}
           teams={teams}
+          otherTeams={otherTeams}
           onUpdate={onUpdateNode}
         />
       )}

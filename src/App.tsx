@@ -134,6 +134,10 @@ function AppInner() {
     selectedNodes.length === 1 && selectedEdges.length === 0 ? selectedNodes[0] : null;
   const selectedEdge =
     selectedEdges.length === 1 && selectedNodes.length === 0 ? selectedEdges[0] : null;
+  const otherTeams = useMemo(
+    () => teamsInUse(nodes.filter((n) => n.id !== selectedNode?.id)),
+    [nodes, selectedNode?.id]
+  );
   const selectedEdgeSourceName = selectedEdge
     ? nodes.find((n) => n.id === selectedEdge.source)?.data.name ?? ''
     : '';
@@ -217,6 +221,7 @@ function AppInner() {
         sourceName={selectedEdgeSourceName}
         targetName={selectedEdgeTargetName}
         teams={teams}
+        otherTeams={otherTeams}
         onUpdateNode={updateNode}
         onUpdateEdge={updateEdge}
       />

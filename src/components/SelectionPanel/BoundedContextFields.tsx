@@ -6,7 +6,10 @@ import { CLASSIFICATION_LABELS, DOMAIN_CLASSIFICATIONS } from '../../constants/c
 
 interface BoundedContextFieldsProps {
   node: BoundedContextNode;
+  /** Every team on the map: the suggestions. */
   teams: string[];
+  /** Teams of the other contexts only: what typed input is matched against. */
+  otherTeams: string[];
   onUpdate: (id: string, data: BoundedContextData) => void;
 }
 
@@ -15,7 +18,7 @@ interface BoundedContextFieldsProps {
  * Every change applies to the map immediately; the name is the one
  * validated field — an empty trimmed name is never committed.
  */
-export default function BoundedContextFields({ node, teams, onUpdate }: BoundedContextFieldsProps) {
+export default function BoundedContextFields({ node, teams, otherTeams, onUpdate }: BoundedContextFieldsProps) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(node.data.name);
   const [description, setDescription] = useState(node.data.description);
@@ -61,7 +64,7 @@ export default function BoundedContextFields({ node, teams, onUpdate }: BoundedC
 
   const handleTeamChange = (value: string) => {
     setTeam(value);
-    const canonical = canonicalTeam(value, teams);
+    const canonical = canonicalTeam(value, otherTeams);
     if (canonical === undefined) {
       const rest = { ...node.data };
       delete rest.owningTeam;
