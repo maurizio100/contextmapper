@@ -75,6 +75,7 @@ function AppInner() {
   }, [clearFocus, fitView]);
 
   const [showContextDialog, setShowContextDialog] = useState(false);
+  const [addContextSeq, setAddContextSeq] = useState(0);
 
   // --- Tidy Up: re-pack into an overlap-free grid, then refit ---
   const handleTidy = useCallback(() => {
@@ -84,6 +85,7 @@ function AppInner() {
 
   // --- Add Context ---
   const handleAddContext = useCallback(() => {
+    setAddContextSeq((seq) => seq + 1);
     setShowContextDialog(true);
   }, []);
 
@@ -204,7 +206,7 @@ function AppInner() {
 
       <ContextDialog
         open={showContextDialog}
-        dialogKey={editingNodeId ?? 'new'}
+        dialogKey={editingNodeId ?? `new-${addContextSeq}`}
         initial={editingNode?.data}
         onConfirm={handleContextConfirm}
         onCancel={handleContextCancel}
