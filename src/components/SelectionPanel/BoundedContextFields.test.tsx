@@ -19,4 +19,18 @@ describe('BoundedContextFields', () => {
     expect(screen.queryByText('A bounded context needs a name.')).not.toBeInTheDocument();
     expect(onUpdate).toHaveBeenCalledWith(node.id, expect.objectContaining({ name: 'Invoicing' }));
   });
+
+  it('omits the classification key when "Unclassified" is chosen', () => {
+    const node = aBoundedContext({
+      data: { name: 'Billing', description: '', color: '#3b82f6', domainClassification: 'core' },
+    });
+    const onUpdate = vi.fn();
+    render(<BoundedContextFields node={node} onUpdate={onUpdate} />);
+
+    fireEvent.change(screen.getByLabelText(/domain classification/i), { target: { value: '' } });
+
+    const data = onUpdate.mock.calls[0][1];
+    expect('domainClassification' in data).toBe(false);
+    expect(data.name).toBe('Billing');
+  });
 });
