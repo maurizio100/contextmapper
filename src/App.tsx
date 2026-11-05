@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ReactFlowProvider, useReactFlow, type Connection } from '@xyflow/react';
 import Canvas from './components/Canvas/Canvas';
 import Toolbar from './components/Toolbar/Toolbar';
@@ -8,13 +8,23 @@ import { useMarkdownExport } from './hooks/useMarkdownExport';
 import { useMarkdownImport } from './hooks/useMarkdownImport';
 import { useJsonExport } from './hooks/useJsonExport';
 import { useJsonImport } from './hooks/useJsonImport';
-import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
+import { useShortcuts } from './hooks/useShortcuts';
+import CommandPalette from './components/CommandPalette/CommandPalette';
 import { useFocusMode } from './hooks/useFocusMode';
 import type {
   BoundedContextNode,
   RelationshipEdge as RelationshipEdgeType,
 } from './types/context-map';
 import { exportToPng } from './utils/png-export';
+import {
+  UNDO_SHORTCUT,
+  REDO_SHORTCUT,
+  REDO_ALT_SHORTCUT,
+  FOCUS_SHORTCUT,
+  EXIT_FOCUS_SHORTCUT,
+  PALETTE_SHORTCUT,
+  type Command,
+} from './utils/commands';
 import { CONTEXT_COLORS, DEFAULT_RELATIONSHIP_DATA } from './constants/relationships';
 import {
   FIT_VIEW_OPTIONS,
@@ -44,7 +54,7 @@ function AppInner() {
     canUndo,
     canRedo,
   } = useContextMap();
-  useUndoRedoShortcuts({ undo, redo });
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   const handleConnect = useCallback(
     (connection: Connection) => {
@@ -71,7 +81,7 @@ function AppInner() {
     hasExistingMap: nodes.length > 0 || edges.length > 0,
   });
   const reactFlowInstance = useReactFlow();
-  const { getViewport, fitView } = reactFlowInstance;
+  const { getViewport, fitView, deleteElements } = reactFlowInstance;
 
   const {
     isFocused,
@@ -129,6 +139,38 @@ function AppInner() {
     ? nodes.find((n) => n.id === selectedEdge.target)?.data.name ?? ''
     : '';
 
+  // --- Action registry: palette, shortcuts and tooltips all read this list ---
+  const handleDelete = useCallback(() => {
+    deleteElements({
+      nodes: selectedNodes.map((n) => ({ id: n.id })),
+      edges: selectedEdges.map((e) => ({ id: e.id })),
+    });
+  }, [deleteElements, selectedNodes, selectedEdges]);
+
+  const commands: Command[] = [
+    { id: 'palette', label: 'Command palette', shortcuts: [PALETTE_SHORTCUT], available: true, run: () => setPaletteOpen((o) => !o) },
+    { id: 'add-context', label: 'Add Context', available: true, run: handleAddContext },
+    { id: 'undo', label: 'Undo', shortcuts: [UNDO_SHORTCUT], available: canUndo, run: undo },
+    { id: 'redo', label: 'Redo', shortcuts: [REDO_SHORTCUT, REDO_ALT_SHORTCUT], available: canRedo, run: redo },
+    { id: 'tidy', label: 'Tidy Up', available: true, run: handleTidy },
+    { id: 'fit-view', label: 'Fit View', available: true, run: () => fitView(FIT_VIEW_OPTIONS) },
+    { id: 'focus', label: 'Focus Selection', shortcuts: [FOCUS_SHORTCUT], available: selectedCount > 0 && !isFocused, run: handleFocus },
+    { id: 'exit-focus', label: 'Exit Focus', shortcuts: [EXIT_FOCUS_SHORTCUT], available: isFocused, run: handleClearFocus },
+    {
+      id: 'delete',
+      label: 'Delete',
+      shortcuts: [{ key: 'Delete' }, { key: 'Backspace' }],
+      available: selectedNodes.length + selectedEdges.length > 0,
+      run: handleDelete,
+    },
+    { id: 'import-markdown', label: 'Import Markdown', available: true, run: importMarkdown },
+    { id: 'import-json', label: 'Import JSON', available: true, run: importJson },
+    { id: 'export-markdown', label: 'Export to Markdown', available: true, run: exportMarkdown },
+    { id: 'export-json', label: 'Export JSON', available: true, run: exportJson },
+    { id: 'export-png', label: 'Export to PNG', available: true, run: () => exportToPng(reactFlowInstance) },
+  ];
+  useShortcuts(commands);
+
   return (
     <div className="w-full h-screen relative">
       <Canvas
@@ -160,6 +202,8 @@ function AppInner() {
         visibleCount={visibleCount}
         hiddenCount={hiddenCount}
       />
+
+      <CommandPalette open={paletteOpen} commands={commands} onClose={() => setPaletteOpen(false)} />
 
       <SelectionPanel
         selectedNode={selectedNode}

@@ -65,7 +65,7 @@ export default function Canvas({
         edgeTypes={edgeTypes}
         onNodeDragStop={(_event, node) => onNodeDragStop(node.id)}
         fitView
-        deleteKeyCode={['Backspace', 'Delete']}
+        deleteKeyCode={null}
         className="bg-gray-50"
       >
         <Background gap={20} size={1} color="#e2e8f0" />
