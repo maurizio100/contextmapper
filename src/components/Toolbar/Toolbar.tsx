@@ -8,6 +8,10 @@ import FileMenu from './FileMenu';
 interface ToolbarProps {
   onAddContext: () => void;
   onTidy: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   onImport: () => void;
   onExport: () => void;
   onImportJson: () => void;
@@ -24,6 +28,10 @@ interface ToolbarProps {
 export default function Toolbar({
   onAddContext,
   onTidy,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
   onImport,
   onExport,
   onImportJson,
@@ -49,6 +57,22 @@ export default function Toolbar({
         </svg>
         Add Context
       </PrimaryButton>
+      <SecondaryButton
+        onClick={onUndo}
+        disabled={!canUndo}
+        title="Undo (Ctrl+Z)"
+        className="px-3 py-2 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        Undo
+      </SecondaryButton>
+      <SecondaryButton
+        onClick={onRedo}
+        disabled={!canRedo}
+        title="Redo (Shift+Ctrl+Z)"
+        className="px-3 py-2 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        Redo
+      </SecondaryButton>
       <SecondaryButton onClick={() => fitView(FIT_VIEW_OPTIONS)} className="px-3 py-2 rounded-lg shadow-sm">
         Fit View
       </SecondaryButton>

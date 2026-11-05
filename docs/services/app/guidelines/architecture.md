@@ -25,6 +25,9 @@ first, then call it from a hook.
 - **One mutation path.** Every change to the map goes through a function returned by `useContextMap`.
   Components and other hooks never call React Flow's `setNodes`/`setEdges` or write to storage
   directly. This is what makes undo/redo, persistence and import consistent.
+- **Undo history.** `useContextMap` keeps the undo/redo history as snapshots of the map. Every mutation
+  that changes map content records a checkpoint before changing state; selection, dimension and focus
+  changes never do. A new checkpoint clears the redo history.
 - **Map state and UI state are separate.** `useContextMap` owns the map (contexts, relationships,
   positions). Selection is React Flow's `selected` flag on nodes and edges, read by deriving from
   the map (as focus mode does), never kept as a second copy; the element being edited is the selected

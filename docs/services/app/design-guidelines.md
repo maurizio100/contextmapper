@@ -99,5 +99,5 @@ The current UI predates these guidelines. Each gap is fixed by its own chore sto
 effect of an unrelated change:
 
 - Toolbar shows 10 buttons, five of them import/export → move import/export/PNG into the File menu.
-- No undo/redo, no command palette, no keyboard shortcuts.
+- No command palette, and no keyboard shortcuts other than undo/redo.
 - Button styles are repeated class strings rather than one shared component per role.
