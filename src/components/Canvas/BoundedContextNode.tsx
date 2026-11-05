@@ -98,6 +98,11 @@ function BoundedContextNodeComponent({ data, selected }: NodeProps<BoundedContex
           {data.description}
         </div>
       )}
+      {data.owningTeam && (
+        <div className="px-3 pb-1.5 text-[11px] text-gray-600 truncate" title={data.owningTeam}>
+          Team: {data.owningTeam}
+        </div>
+      )}
       {SIDES.flatMap((side) => sideHandles(side))}
     </div>
   );

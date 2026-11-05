@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { BoundedContextData, BoundedContextNode, DomainClassification } from '../../types/context-map';
 import { CONTEXT_COLORS } from '../../constants/relationships';
+import { canonicalTeam } from '../../utils/teams';
 import { CLASSIFICATION_LABELS, DOMAIN_CLASSIFICATIONS } from '../../constants/classification';
 
 interface BoundedContextFieldsProps {
   node: BoundedContextNode;
+  teams: string[];
   onUpdate: (id: string, data: BoundedContextData) => void;
 }
 
@@ -13,11 +15,12 @@ interface BoundedContextFieldsProps {
  * Every change applies to the map immediately; the name is the one
  * validated field — an empty trimmed name is never committed.
  */
-export default function BoundedContextFields({ node, onUpdate }: BoundedContextFieldsProps) {
+export default function BoundedContextFields({ node, teams, onUpdate }: BoundedContextFieldsProps) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(node.data.name);
   const [description, setDescription] = useState(node.data.description);
   const [color, setColor] = useState(node.data.color);
+  const [team, setTeam] = useState(node.data.owningTeam ?? '');
   const [nameError, setNameError] = useState(false);
 
   useEffect(() => {
@@ -54,6 +57,18 @@ export default function BoundedContextFields({ node, onUpdate }: BoundedContextF
       return;
     }
     onUpdate(node.id, { ...node.data, domainClassification: value as DomainClassification });
+  };
+
+  const handleTeamChange = (value: string) => {
+    setTeam(value);
+    const canonical = canonicalTeam(value, teams);
+    if (canonical === undefined) {
+      const rest = { ...node.data };
+      delete rest.owningTeam;
+      onUpdate(node.id, rest);
+      return;
+    }
+    onUpdate(node.id, { ...node.data, owningTeam: canonical });
   };
 
   return (
@@ -100,6 +115,23 @@ export default function BoundedContextFields({ node, onUpdate }: BoundedContextF
             </option>
           ))}
         </select>
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-medium text-gray-700">Owning team</span>
+        <input
+          type="text"
+          list="owning-team-options"
+          value={team}
+          onChange={(e) => handleTeamChange(e.target.value)}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          placeholder="e.g. Team Payments"
+        />
+        <datalist id="owning-team-options">
+          {teams.map((t) => (
+            <option key={t} value={t} />
+          ))}
+        </datalist>
       </label>
 
       <fieldset>

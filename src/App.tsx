@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ReactFlowProvider, useReactFlow, type Connection } from '@xyflow/react';
 import Canvas from './components/Canvas/Canvas';
 import Toolbar from './components/Toolbar/Toolbar';
+import { teamsInUse } from './utils/teams';
 import SelectionPanel from './components/SelectionPanel/SelectionPanel';
 import { useContextMap } from './hooks/useContextMap';
 import { useMarkdownExport } from './hooks/useMarkdownExport';
@@ -126,6 +127,7 @@ function AppInner() {
   }, [addNode, getViewport]);
 
   // --- Selection panel: derived from the map's own selection, not a second copy of UI state ---
+  const teams = useMemo(() => teamsInUse(nodes), [nodes]);
   const selectedNodes = useMemo(() => nodes.filter((n) => n.selected), [nodes]);
   const selectedEdges = useMemo(() => edges.filter((e) => e.selected), [edges]);
   const selectedNode =
@@ -214,6 +216,7 @@ function AppInner() {
         selectedEdge={selectedEdge}
         sourceName={selectedEdgeSourceName}
         targetName={selectedEdgeTargetName}
+        teams={teams}
         onUpdateNode={updateNode}
         onUpdateEdge={updateEdge}
       />
