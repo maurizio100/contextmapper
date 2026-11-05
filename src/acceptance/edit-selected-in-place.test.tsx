@@ -99,9 +99,24 @@ describe('STORY-006 Edit the selected bounded context or relationship in place',
     expect(document.querySelectorAll('.react-flow__node.selected').length).toBe(1);
 
     const panel = screen.getByRole('complementary');
-    const nameInput = within(panel).getByLabelText(/^name$/i);
-    expect(nameInput).toHaveValue('');
+    const nameInput = within(panel).getByLabelText(/^name$/i) as HTMLInputElement;
+    expect(nameInput).toHaveValue('New context');
     await waitFor(() => expect(nameInput).toHaveFocus());
+    expect(nameInput.selectionStart).toBe(0);
+    expect(nameInput.selectionEnd).toBe(nameInput.value.length);
+  });
+
+  it('a new bounded context left untouched still has a name once deselected', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add Context' }));
+
+    const pane = document.querySelector('.react-flow__pane');
+    if (!pane) throw new Error('react flow pane not found');
+    fireEvent.click(pane);
+
+    const nodeEl = screen.getByTestId('bounded-context-New context');
+    expect(within(nodeEl).getByText('New context')).toBeInTheDocument();
   });
 
   it('clearing the selection hides the details', () => {

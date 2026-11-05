@@ -21,6 +21,7 @@ export default function BoundedContextFields({ node, onUpdate }: BoundedContextF
 
   useEffect(() => {
     nameRef.current?.focus();
+    nameRef.current?.select();
   }, []);
 
   const handleNameChange = (value: string) => {

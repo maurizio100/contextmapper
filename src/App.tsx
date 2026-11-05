@@ -15,7 +15,13 @@ import type {
 } from './types/context-map';
 import { exportToPng } from './utils/png-export';
 import { CONTEXT_COLORS, DEFAULT_RELATIONSHIP_DATA } from './constants/relationships';
-import { FIT_VIEW_OPTIONS, NEW_CONTEXT_OFFSET_X, NEW_CONTEXT_OFFSET_Y, NEW_CONTEXT_JITTER_RANGE } from './constants/canvas';
+import {
+  FIT_VIEW_OPTIONS,
+  NEW_CONTEXT_OFFSET_X,
+  NEW_CONTEXT_OFFSET_Y,
+  NEW_CONTEXT_JITTER_RANGE,
+  NEW_CONTEXT_NAME,
+} from './constants/canvas';
 
 function AppInner() {
   const {
@@ -95,7 +101,7 @@ function AppInner() {
     const centerX = (-x + window.innerWidth / 2) / zoom;
     const centerY = (-y + window.innerHeight / 2) / zoom;
     addNode(
-      { name: '', description: '', color: CONTEXT_COLORS[0] },
+      { name: NEW_CONTEXT_NAME, description: '', color: CONTEXT_COLORS[0] },
       {
         x: centerX - NEW_CONTEXT_OFFSET_X + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
         y: centerY - NEW_CONTEXT_OFFSET_Y + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
