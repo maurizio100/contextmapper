@@ -98,3 +98,24 @@ describe('parseJson owning team', () => {
     expect(result.warnings).toHaveLength(1);
   });
 });
+
+describe('parseJson external system', () => {
+  const build = (extra: Record<string, unknown>) => {
+    const node = aBoundedContext({ data: { name: 'Billing', description: '', color: '#3b82f6' } });
+    const doc = JSON.parse(generateJson([node], []));
+    Object.assign(doc.nodes[0].data, extra);
+    return JSON.stringify(doc);
+  };
+
+  it('keeps external: true', () => {
+    const result = parseJson(build({ external: true }));
+    expect(result.warnings).toEqual([]);
+    expect(result.nodes[0].data.external).toBe(true);
+  });
+
+  it('skips a node with a non-boolean external and warns', () => {
+    const result = parseJson(build({ external: 'yes' }));
+    expect(result.nodes).toEqual([]);
+    expect(result.warnings).toHaveLength(1);
+  });
+});
