@@ -140,6 +140,20 @@ describe('STORY-008 Reach any action from a command palette and keyboard shortcu
     expect(screen.getByText('Catalog')).toBeInTheDocument();
   });
 
+  it('Delete does nothing to the map while the palette is open, even with focus outside its input', async () => {
+    seedMap();
+    render(<App />);
+    clickNode('Billing');
+    openPalette();
+
+    fireEvent.keyDown(document.body, { key: 'Delete', code: 'Delete' });
+    fireEvent.keyDown(document.body, { key: 'f', code: 'KeyF' });
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.getByText('Billing')).toBeInTheDocument();
+    expect(isFocusActive()).toBe(false);
+  });
+
   it('Escape shows the whole map again', async () => {
     seedMap();
     render(<App />);

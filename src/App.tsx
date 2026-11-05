@@ -147,7 +147,7 @@ function AppInner() {
     });
   }, [deleteElements, selectedNodes, selectedEdges]);
 
-  const commands: Command[] = [
+  const commands: Command[] = useMemo(() => [
     { id: 'palette', label: 'Command palette', shortcuts: [PALETTE_SHORTCUT], available: true, run: () => setPaletteOpen((o) => !o) },
     { id: 'add-context', label: 'Add Context', available: true, run: handleAddContext },
     { id: 'undo', label: 'Undo', shortcuts: [UNDO_SHORTCUT], available: canUndo, run: undo },
@@ -168,8 +168,12 @@ function AppInner() {
     { id: 'export-markdown', label: 'Export to Markdown', available: true, run: exportMarkdown },
     { id: 'export-json', label: 'Export JSON', available: true, run: exportJson },
     { id: 'export-png', label: 'Export to PNG', available: true, run: () => exportToPng(reactFlowInstance) },
-  ];
-  useShortcuts(commands);
+  ], [
+    handleAddContext, canUndo, undo, canRedo, redo, handleTidy, fitView, selectedCount, isFocused,
+    handleFocus, handleClearFocus, selectedNodes, selectedEdges, handleDelete,
+    importMarkdown, importJson, exportMarkdown, exportJson, reactFlowInstance,
+  ]);
+  useShortcuts(commands, paletteOpen);
 
   return (
     <div className="w-full h-screen relative">

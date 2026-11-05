@@ -8,14 +8,18 @@ function isTextTarget(target: EventTarget | null): boolean {
   );
 }
 
-/** Binds every command's shortcuts through one keydown listener; ignored while typing unless allowed. */
-export function useShortcuts(commands: Command[]) {
+/**
+ * Binds every command's shortcuts through one keydown listener; ignored while typing unless allowed.
+ * While the palette is open only the palette's own toggle shortcut acts.
+ */
+export function useShortcuts(commands: Command[], paletteOpen = false) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const typing = isTextTarget(event.target);
       const match = commands.find(
         (c) =>
           c.available &&
+          (!paletteOpen || c.id === 'palette') &&
           c.shortcuts?.some(
             (s) => (!typing || s.allowWhileTyping) && matchesShortcut(event, s)
           )
@@ -26,5 +30,5 @@ export function useShortcuts(commands: Command[]) {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [commands]);
+  }, [commands, paletteOpen]);
 }
