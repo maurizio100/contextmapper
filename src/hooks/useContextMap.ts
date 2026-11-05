@@ -120,8 +120,10 @@ export function useContextMap() {
         type: 'boundedContext',
         position,
         data,
+        selected: true,
       };
-      setNodes((nds) => [...nds, newNode]);
+      setNodes((nds) => [...nds.map((n) => ({ ...n, selected: false })), newNode]);
+      setEdges((eds) => eds.map((e) => ({ ...e, selected: false })));
     },
     []
   );
@@ -142,8 +144,10 @@ export function useContextMap() {
         targetHandle: conn.targetHandle ?? undefined,
         type: 'relationship',
         data,
+        selected: true,
       };
-      setEdges((eds) => [...eds, newEdge]);
+      setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
+      setEdges((eds) => [...eds.map((e) => ({ ...e, selected: false })), newEdge]);
     },
     []
   );

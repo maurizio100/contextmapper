@@ -1,4 +1,4 @@
-import { RelationshipType } from '../types/context-map';
+import { RelationshipType, type RelationshipData } from '../types/context-map';
 
 export type RelationshipCategory =
   | 'symmetric'
@@ -89,6 +89,14 @@ export const RELATIONSHIP_META: Record<RelationshipType, RelationshipMeta> = {
     labelSide: 'center',
     category: 'symmetric',
   },
+};
+
+/** Default data for a relationship created by connecting two contexts directly on the canvas. */
+export const DEFAULT_RELATIONSHIP_DATA: RelationshipData = {
+  relationshipType: RelationshipType.CustomerSupplier,
+  sourceRole: 'upstream',
+  targetRole: 'downstream',
+  notes: '',
 };
 
 export const CONTEXT_COLORS = [

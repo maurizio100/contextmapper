@@ -1,0 +1,96 @@
+import { useEffect, useRef, useState } from 'react';
+import type { BoundedContextData, BoundedContextNode } from '../../types/context-map';
+import { CONTEXT_COLORS } from '../../constants/relationships';
+
+interface BoundedContextFieldsProps {
+  node: BoundedContextNode;
+  onUpdate: (id: string, data: BoundedContextData) => void;
+}
+
+/**
+ * Fields for the selected bounded context, shown in the selection panel.
+ * Every change applies to the map immediately; the name is the one
+ * validated field — an empty trimmed name is never committed.
+ */
+export default function BoundedContextFields({ node, onUpdate }: BoundedContextFieldsProps) {
+  const nameRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState(node.data.name);
+  const [description, setDescription] = useState(node.data.description);
+  const [color, setColor] = useState(node.data.color);
+  const [nameError, setNameError] = useState(false);
+
+  useEffect(() => {
+    nameRef.current?.focus();
+  }, []);
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setNameError(true);
+      return;
+    }
+    setNameError(false);
+    onUpdate(node.id, { ...node.data, name: trimmed });
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    onUpdate(node.id, { ...node.data, description: value });
+  };
+
+  const handleColorChange = (value: string) => {
+    setColor(value);
+    onUpdate(node.id, { ...node.data, color: value });
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h2 className="text-lg font-bold text-gray-900">Bounded Context</h2>
+
+      <label className="block">
+        <span className="text-sm font-medium text-gray-700">Name</span>
+        <input
+          ref={nameRef}
+          type="text"
+          value={name}
+          onChange={(e) => handleNameChange(e.target.value)}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          placeholder="e.g. Order Management"
+        />
+        {nameError && (
+          <span className="mt-1 block text-xs text-red-600">A bounded context needs a name.</span>
+        )}
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-medium text-gray-700">Description</span>
+        <textarea
+          value={description}
+          onChange={(e) => handleDescriptionChange(e.target.value)}
+          rows={3}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+          placeholder="What does this context handle?"
+        />
+      </label>
+
+      <fieldset>
+        <legend className="text-sm font-medium text-gray-700 mb-2">Color</legend>
+        <div className="flex gap-2 flex-wrap">
+          {CONTEXT_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-pressed={color === c}
+              onClick={() => handleColorChange(c)}
+              className={`w-8 h-8 rounded-full border-2 transition-transform ${
+                color === c ? 'border-gray-800 scale-110' : 'border-transparent'
+              }`}
+              style={{ backgroundColor: c }}
+            />
+          ))}
+        </div>
+      </fieldset>
+    </div>
+  );
+}
