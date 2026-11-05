@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import type { PendingConnection } from '../types/context-map';
 
 export interface MapUIState {
@@ -14,21 +15,43 @@ export interface MapUIState {
 }
 
 /**
- * Scaffold: fields and setters have the right shape but don't yet hold
- * state — wiring them to useState (and resetAll clearing all three) is the
- * implementor's work.
+ * The element being connected/edited — separate from the map itself
+ * (guidelines/architecture.md, State: map state and UI state are separate).
  */
 export function useMapUIState(): MapUIState {
+  const [pendingConnection, setPendingConnection] =
+    useState<PendingConnection | null>(null);
+  const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+
+  const clearPendingConnection = useCallback(() => {
+    setPendingConnection(null);
+  }, []);
+
+  const clearEditingEdge = useCallback(() => {
+    setEditingEdgeId(null);
+  }, []);
+
+  const clearEditingNode = useCallback(() => {
+    setEditingNodeId(null);
+  }, []);
+
+  const resetAll = useCallback(() => {
+    setPendingConnection(null);
+    setEditingEdgeId(null);
+    setEditingNodeId(null);
+  }, []);
+
   return {
-    pendingConnection: null,
-    setPendingConnection: () => {},
-    clearPendingConnection: () => {},
-    editingEdgeId: null,
-    setEditingEdgeId: () => {},
-    clearEditingEdge: () => {},
-    editingNodeId: null,
-    setEditingNodeId: () => {},
-    clearEditingNode: () => {},
-    resetAll: () => {},
+    pendingConnection,
+    setPendingConnection,
+    clearPendingConnection,
+    editingEdgeId,
+    setEditingEdgeId,
+    clearEditingEdge,
+    editingNodeId,
+    setEditingNodeId,
+    clearEditingNode,
+    resetAll,
   };
 }

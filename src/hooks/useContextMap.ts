@@ -77,10 +77,6 @@ export function useContextMap() {
   const [edges, setEdges] = useState<RelationshipEdge[]>(
     () => loadFromStorage()?.edges ?? []
   );
-  const [pendingConnection, setPendingConnection] =
-    useState<PendingConnection | null>(null);
-  const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
-  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
 
   // Keep the latest nodes/edges accessible to callbacks that need both at once.
   const nodesRef = useRef(nodes);
@@ -106,15 +102,6 @@ export function useContextMap() {
     },
     []
   );
-
-  const onConnect = useCallback((connection: Connection) => {
-    setPendingConnection({
-      source: connection.source,
-      target: connection.target,
-      sourceHandle: connection.sourceHandle,
-      targetHandle: connection.targetHandle,
-    });
-  }, []);
 
   const onReconnect = useCallback(
     (oldEdge: RelationshipEdge, newConnection: Connection) => {
@@ -168,9 +155,6 @@ export function useContextMap() {
     (newNodes: BoundedContextNode[], newEdges: RelationshipEdge[]) => {
       setNodes(newNodes);
       setEdges(newEdges);
-      setPendingConnection(null);
-      setEditingEdgeId(null);
-      setEditingNodeId(null);
     },
     []
   );
@@ -199,23 +183,12 @@ export function useContextMap() {
     });
   }, []);
 
-  // Scaffold: real merge behaviour (mirroring updateEdge) is the implementor's
-  // work; this stub only gives bendEdge a stable identity and signature.
   const bendEdge = useCallback((id: string, offset: ControlOffset) => {
-    void id;
-    void offset;
-  }, []);
-
-  const clearPendingConnection = useCallback(() => {
-    setPendingConnection(null);
-  }, []);
-
-  const clearEditingEdge = useCallback(() => {
-    setEditingEdgeId(null);
-  }, []);
-
-  const clearEditingNode = useCallback(() => {
-    setEditingNodeId(null);
+    setEdges((eds) =>
+      eds.map((e) =>
+        e.id === id && e.data ? { ...e, data: { ...e.data, controlOffset: offset } } : e
+      )
+    );
   }, []);
 
   return {
@@ -223,7 +196,6 @@ export function useContextMap() {
     edges,
     onNodesChange,
     onEdgesChange,
-    onConnect,
     onReconnect,
     addNode,
     updateNode,
@@ -233,13 +205,5 @@ export function useContextMap() {
     tidyLayout,
     separateNode,
     bendEdge,
-    pendingConnection,
-    clearPendingConnection,
-    editingEdgeId,
-    setEditingEdgeId,
-    clearEditingEdge,
-    editingNodeId,
-    setEditingNodeId,
-    clearEditingNode,
   };
 }

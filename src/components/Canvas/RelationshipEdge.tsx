@@ -1,13 +1,13 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
   useReactFlow,
   type EdgeProps,
 } from '@xyflow/react';
-import type { Clarity, RelationshipData, RelationshipType } from '../../types/context-map';
+import type { Clarity, ControlOffset, RelationshipData, RelationshipType } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
-import { markDragEnded } from './dragging';
+import { useEdgeActions } from '../../hooks/useEdgeActions';
 
 const CLARITY_STROKE: Record<string, { normal: string; selected: string }> = {
   clear:              { normal: '#22c55e', selected: '#15803d' },
@@ -42,10 +42,18 @@ export default function RelationshipEdge({
   data,
   selected,
 }: EdgeProps & { data?: RelationshipData }) {
-  const { setEdges, screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
+  const { bendEdge } = useEdgeActions();
   const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const offsetStart = useRef({ x: 0, y: 0 });
+  // Set once the pointer actually moves during a drag (reset on pointer-down);
+  // distinguishes a drag-ending click (suppressed) from a plain click (bubbles).
+  const movedRef = useRef(false);
+  // Local live offset while dragging — visual feedback only; the map only
+  // learns about the bend once, via bendEdge on pointer-up.
+  const [liveOffset, setLiveOffset] = useState<ControlOffset | null>(null);
+  const liveOffsetRef = useRef<ControlOffset | null>(null);
 
   const meta = data ? RELATIONSHIP_META[data.relationshipType] : null;
   const isDirectional = meta && !meta.symmetric;
@@ -71,8 +79,8 @@ export default function RelationshipEdge({
   // Control point = midpoint + user offset
   const midX = (sourceX + targetX) / 2;
   const midY = (sourceY + targetY) / 2;
-  const ox = data?.controlOffset?.x ?? 0;
-  const oy = data?.controlOffset?.y ?? 0;
+  const ox = liveOffset?.x ?? data?.controlOffset?.x ?? 0;
+  const oy = liveOffset?.y ?? data?.controlOffset?.y ?? 0;
   const ctrlX = midX + ox;
   const ctrlY = midY + oy;
 
@@ -110,6 +118,7 @@ export default function RelationshipEdge({
       e.stopPropagation();
       e.preventDefault();
       dragging.current = true;
+      movedRef.current = false;
       dragStart.current = { x: e.clientX, y: e.clientY };
       offsetStart.current = { x: ox, y: oy };
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -120,6 +129,7 @@ export default function RelationshipEdge({
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
       if (!dragging.current) return;
+      movedRef.current = true;
 
       // Convert start and current screen positions to flow coordinates
       const flowStart = screenToFlowPosition({
@@ -136,22 +146,26 @@ export default function RelationshipEdge({
         y: offsetStart.current.y + dy,
       };
 
-      setEdges((eds) =>
-        eds.map((edge) =>
-          edge.id === id
-            ? { ...edge, data: { ...edge.data, controlOffset: newOffset } }
-            : edge,
-        ),
-      );
+      liveOffsetRef.current = newOffset;
+      setLiveOffset(newOffset);
     },
-    [id, setEdges, screenToFlowPosition],
+    [screenToFlowPosition],
   );
 
   const onPointerUp = useCallback(() => {
-    if (dragging.current) {
-      markDragEnded();
+    if (dragging.current && movedRef.current && liveOffsetRef.current) {
+      bendEdge(id, liveOffsetRef.current);
     }
     dragging.current = false;
+    liveOffsetRef.current = null;
+    setLiveOffset(null);
+  }, [id, bendEdge]);
+
+  const onHandleClick = useCallback((e: React.MouseEvent) => {
+    if (movedRef.current) {
+      e.stopPropagation();
+      movedRef.current = false;
+    }
   }, []);
 
   return (
@@ -233,6 +247,7 @@ export default function RelationshipEdge({
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onClick={onHandleClick}
           />
 
           {/* Role badges (U/D) near source and target */}
