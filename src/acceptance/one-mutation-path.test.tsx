@@ -74,7 +74,8 @@ describe('STORY-002 one mutation path', () => {
       return el;
     });
 
-    fireEvent.click(screen.getByText('Import JSON'));
+    fireEvent.click(screen.getByRole('button', { name: 'File' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Import JSON' }));
 
     const input = createdInputs.at(-1);
     if (!input) throw new Error('import did not create a file input');
