@@ -3,6 +3,7 @@ import { FIT_VIEW_OPTIONS } from '../../constants/canvas';
 import PrimaryButton from '../ui/PrimaryButton';
 import SecondaryButton from '../ui/SecondaryButton';
 import ModeActiveButton from '../ui/ModeActiveButton';
+import FileMenu from './FileMenu';
 
 interface ToolbarProps {
   onAddContext: () => void;
@@ -77,21 +78,13 @@ export default function Toolbar({
           Focus Selection
         </SecondaryButton>
       )}
-      <SecondaryButton onClick={onImport} className="px-3 py-2 rounded-lg shadow-sm">
-        Import Markdown
-      </SecondaryButton>
-      <SecondaryButton onClick={onExport} className="px-3 py-2 rounded-lg shadow-sm">
-        Export to Markdown
-      </SecondaryButton>
-      <SecondaryButton onClick={onImportJson} className="px-3 py-2 rounded-lg shadow-sm">
-        Import JSON
-      </SecondaryButton>
-      <SecondaryButton onClick={onExportJson} className="px-3 py-2 rounded-lg shadow-sm">
-        Export JSON
-      </SecondaryButton>
-      <SecondaryButton onClick={onExportPng} className="px-3 py-2 rounded-lg shadow-sm">
-        Export to PNG
-      </SecondaryButton>
+      <FileMenu
+        onImport={onImport}
+        onExport={onExport}
+        onImportJson={onImportJson}
+        onExportJson={onExportJson}
+        onExportPng={onExportPng}
+      />
     </div>
   );
 }
