@@ -33,3 +33,31 @@ describe('JSON import legacy relationship normalisation', () => {
     expect(importedEdge.data?.downstreamType).toBe(RelationshipType.AnticorruptionLayer);
   });
 });
+
+describe('JSON import domain classification', () => {
+  const build = (extra: Record<string, unknown>) => {
+    const node = aBoundedContext({
+      data: { name: 'Billing', description: '', color: '#3b82f6' },
+    });
+    const doc = JSON.parse(generateJson([node], []));
+    Object.assign(doc.nodes[0].data, extra);
+    return JSON.stringify(doc);
+  };
+
+  it('accepts a node without a classification', () => {
+    const result = parseJson(build({}));
+    expect(result.warnings).toEqual([]);
+    expect(result.nodes[0].data.domainClassification).toBeUndefined();
+  });
+
+  it('keeps a valid classification', () => {
+    const result = parseJson(build({ domainClassification: 'core' }));
+    expect(result.nodes[0].data.domainClassification).toBe('core');
+  });
+
+  it('skips a node with an invalid classification and warns', () => {
+    const result = parseJson(build({ domainClassification: 'vital' }));
+    expect(result.nodes).toEqual([]);
+    expect(result.warnings).toHaveLength(1);
+  });
+});

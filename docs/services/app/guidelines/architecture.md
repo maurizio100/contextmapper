@@ -50,9 +50,14 @@ first, then call it from a hook.
 - **JSON** is the canonical exchange format, validated against `src/schema/context-map.schema.json`
   with Ajv on import. Bump `CONTEXT_MAP_JSON_VERSION` and the schema's `version` only for
   backward-incompatible changes. A new optional field is not a version bump.
+- **Adding a per-context field.** A new bounded-context field is an optional key on
+  `BoundedContextData`, declared (not required) in the schema's `boundedContextData`, edited in the
+  selection panel, and omitted rather than stored as `null` when unset.
 - **Markdown** export/import follows the context-map table format in `docs/domain/context-map.md`.
   The `Type` column grammar is `<Pattern Name> (<CODE>) [U:<CODE> D:<CODE>]`.
-- A change to the map's model touches `types/`, the schema, and both import and export in the same change.
+- A change to the map's model touches `types/`, the schema, and JSON import and export in the same change.
+  Markdown carries only what its table format in `docs/domain/context-map.md` defines (it already
+  leaves out colour), so a new field reaches Markdown only when that format is extended.
 
 ## Desktop shell (`src-tauri/`)
 

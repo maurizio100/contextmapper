@@ -47,3 +47,15 @@ describe('JSON export/import round-trip', () => {
     expect(importedEdge.data?.clarity).toBe('clear');
   });
 });
+
+describe('JSON export domain classification', () => {
+  it('omits the key for an unclassified node and emits it when set', () => {
+    const plain = aBoundedContext({ data: { name: 'Billing', description: '', color: '#3b82f6' } });
+    const classified = aBoundedContext({
+      data: { name: 'Shipping', description: '', color: '#10b981', domainClassification: 'generic' },
+    });
+    const doc = JSON.parse(generateJson([plain, classified], []));
+    expect('domainClassification' in doc.nodes[0].data).toBe(false);
+    expect(doc.nodes[1].data.domainClassification).toBe('generic');
+  });
+});

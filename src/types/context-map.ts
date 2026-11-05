@@ -21,11 +21,14 @@ export type Clarity = 'clear' | 'unsure' | 'needs-improvement';
 
 export type HandleSide = 'top' | 'right' | 'bottom' | 'left';
 
+export type DomainClassification = 'core' | 'supporting' | 'generic';
+
 export interface BoundedContextData {
   [key: string]: unknown;
   name: string;
   description: string;
   color: string;
+  domainClassification?: DomainClassification;
 }
 
 export interface ControlOffset {

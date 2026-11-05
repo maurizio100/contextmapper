@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import type { BoundedContextData, BoundedContextNode } from '../../types/context-map';
+import type { BoundedContextData, BoundedContextNode, DomainClassification } from '../../types/context-map';
 import { CONTEXT_COLORS } from '../../constants/relationships';
+import { CLASSIFICATION_LABELS, DOMAIN_CLASSIFICATIONS } from '../../constants/classification';
 
 interface BoundedContextFieldsProps {
   node: BoundedContextNode;
@@ -45,6 +46,16 @@ export default function BoundedContextFields({ node, onUpdate }: BoundedContextF
     onUpdate(node.id, { ...node.data, color: value });
   };
 
+  const handleClassificationChange = (value: string) => {
+    if (value === '') {
+      const rest = { ...node.data };
+      delete rest.domainClassification;
+      onUpdate(node.id, rest);
+      return;
+    }
+    onUpdate(node.id, { ...node.data, domainClassification: value as DomainClassification });
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-lg font-bold text-gray-900">Bounded Context</h2>
@@ -73,6 +84,22 @@ export default function BoundedContextFields({ node, onUpdate }: BoundedContextF
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
           placeholder="What does this context handle?"
         />
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-medium text-gray-700">Domain classification</span>
+        <select
+          value={node.data.domainClassification ?? ''}
+          onChange={(e) => handleClassificationChange(e.target.value)}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+        >
+          <option value="">Unclassified</option>
+          {DOMAIN_CLASSIFICATIONS.map((c) => (
+            <option key={c} value={c}>
+              {CLASSIFICATION_LABELS[c]}
+            </option>
+          ))}
+        </select>
       </label>
 
       <fieldset>
