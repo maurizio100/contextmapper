@@ -56,7 +56,7 @@ function BoundedContextNodeComponent({ data, selected }: NodeProps<BoundedContex
         transition-shadow cursor-grab active:cursor-grabbing
         ${selected ? 'shadow-lg ring-2 ring-blue-400' : ''}
       `}
-      style={{ borderColor: data.color }}
+      style={{ borderColor: data.color, ...(data.external ? { borderStyle: 'dashed' } : {}) }}
     >
       <div
         className="px-3 py-1.5 rounded-t-md text-white font-semibold text-sm flex items-center justify-between gap-2"
@@ -98,6 +98,7 @@ function BoundedContextNodeComponent({ data, selected }: NodeProps<BoundedContex
           {data.description}
         </div>
       )}
+      {data.external && <div className="px-3 pb-1.5 text-[11px] text-gray-600 truncate">External system</div>}
       {data.owningTeam && (
         <div className="px-3 pb-1.5 text-[11px] text-gray-600 truncate" title={data.owningTeam}>
           Team: {data.owningTeam}

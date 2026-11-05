@@ -88,7 +88,9 @@ describe('STORY-012 Mark a bounded context as an external system', () => {
 
     fireEvent.click(screen.getByTestId('relationship-Billing-Payment Provider'));
 
-    expect(within(screen.getByRole('complementary')).getByText(/anticorruption layer/i)).toBeInTheDocument();
+    const panel = within(screen.getByRole('complementary'));
+    expect(panel.getByText(/Billing ↔ Payment Provider/)).toBeInTheDocument();
+    expect(panel.getByRole('button', { name: /ACL/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('external round-trips through JSON export and import', () => {
