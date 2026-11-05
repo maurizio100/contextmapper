@@ -286,7 +286,7 @@ function RelationshipDialogForm({
               {/* Upstream row */}
               <div className="flex items-center gap-3 px-3 py-2.5 border-b border-gray-100">
                 <div className="w-28 shrink-0">
-                  <span className="block text-[10px] font-bold uppercase tracking-wide text-blue-500">
+                  <span className={`block text-[10px] font-bold uppercase tracking-wide ${ROLE_COLORS.upstream.textClass}`}>
                     Upstream
                   </span>
                   <span className="block text-xs text-gray-500 truncate" title={upstreamName}>
@@ -329,7 +329,7 @@ function RelationshipDialogForm({
               {/* Downstream row */}
               <div className="flex items-center gap-3 px-3 py-2.5">
                 <div className="w-28 shrink-0">
-                  <span className="block text-[10px] font-bold uppercase tracking-wide text-orange-500">
+                  <span className={`block text-[10px] font-bold uppercase tracking-wide ${ROLE_COLORS.downstream.textClass}`}>
                     Downstream
                   </span>
                   <span className="block text-xs text-gray-500 truncate" title={downstreamName}>
