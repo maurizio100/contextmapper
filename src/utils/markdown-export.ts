@@ -1,5 +1,12 @@
 import type { BoundedContextNode, RelationshipEdge, RelationshipData } from '../types/context-map';
 import { RELATIONSHIP_META } from '../constants/relationships';
+import { downloadBlob } from './download';
+
+type RelationshipEdgeWithData = RelationshipEdge & { data: RelationshipData };
+
+function hasRelationshipData(edge: RelationshipEdge): edge is RelationshipEdgeWithData {
+  return edge.data !== undefined;
+}
 
 function getNodeName(nodes: BoundedContextNode[], id: string): string {
   return nodes.find((n) => n.id === id)?.data.name ?? 'Unknown';
@@ -25,13 +32,14 @@ export function generateMarkdown(
 
   lines.push('---\n');
 
-  // Split edges into directional and symmetric
-  const directional: RelationshipEdge[] = [];
-  const symmetric: RelationshipEdge[] = [];
+  // Split edges into directional and symmetric; an edge without data (none
+  // can exist after STORY-003 normalisation and schema validation) is
+  // skipped rather than rendered.
+  const directional: RelationshipEdgeWithData[] = [];
+  const symmetric: RelationshipEdgeWithData[] = [];
 
-  edges.forEach((edge) => {
-    const data = edge.data as RelationshipData;
-    const meta = RELATIONSHIP_META[data.relationshipType];
+  edges.filter(hasRelationshipData).forEach((edge) => {
+    const meta = RELATIONSHIP_META[edge.data.relationshipType];
     if (meta.symmetric) {
       symmetric.push(edge);
     } else {
@@ -45,7 +53,7 @@ export function generateMarkdown(
     lines.push('| # | Upstream | Downstream | Type | Clarity | Notes |');
     lines.push('|---|----------|------------|------|---------|-------|');
     directional.forEach((edge, i) => {
-      const data = edge.data as RelationshipData;
+      const data = edge.data;
       const baseMeta = RELATIONSHIP_META[data.relationshipType];
       const upstreamId = data.sourceRole === 'upstream' ? edge.source : edge.target;
       const downstreamId = data.sourceRole === 'upstream' ? edge.target : edge.source;
@@ -77,7 +85,7 @@ export function generateMarkdown(
     lines.push('| # | Context A | Context B | Type | Clarity | Notes |');
     lines.push('|---|-----------|-----------|------|---------|-------|');
     symmetric.forEach((edge, i) => {
-      const data = edge.data as RelationshipData;
+      const data = edge.data;
       const meta = RELATIONSHIP_META[data.relationshipType];
       const a = getNodeName(nodes, edge.source);
       const b = getNodeName(nodes, edge.target);
@@ -97,9 +105,8 @@ export function generateMarkdown(
 
   if (edges.length > 0) {
     const breakdown: Record<string, number> = {};
-    edges.forEach((edge) => {
-      const data = edge.data as RelationshipData;
-      const meta = RELATIONSHIP_META[data.relationshipType];
+    [...directional, ...symmetric].forEach((edge) => {
+      const meta = RELATIONSHIP_META[edge.data.relationshipType];
       breakdown[meta.label] = (breakdown[meta.label] ?? 0) + 1;
     });
     const parts = Object.entries(breakdown)
@@ -113,11 +120,5 @@ export function generateMarkdown(
 }
 
 export function downloadMarkdown(content: string, filename = 'context-map.md') {
-  const blob = new Blob([content], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(content, filename, 'text/markdown');
 }

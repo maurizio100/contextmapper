@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useFileImport } from './useFileImport';
@@ -40,6 +40,10 @@ function triggerImport(result: ReturnType<typeof setup>['result'], content: stri
 }
 
 describe('useFileImport', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('replaces the map and fits the view on a successful import with no existing map', async () => {
     const node = aBoundedContext();
     const parse = vi.fn().mockReturnValue({ nodes: [node], edges: [], warnings: [] });

@@ -1,5 +1,6 @@
 import { toPng } from 'html-to-image';
 import type { ReactFlowInstance } from '@xyflow/react';
+import { downloadDataUrl } from './download';
 
 export async function exportToPng(reactFlowInstance: ReactFlowInstance) {
   // Fit view first so everything is visible
@@ -23,8 +24,5 @@ export async function exportToPng(reactFlowInstance: ReactFlowInstance) {
     },
   });
 
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = 'context-map.png';
-  a.click();
+  downloadDataUrl(dataUrl, 'context-map.png');
 }
