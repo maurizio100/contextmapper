@@ -1,6 +1,7 @@
 import { memo, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { BoundedContextNode, HandleSide } from '../../types/context-map';
+import { CLASSIFICATION_LABELS } from '../../constants/classification';
 import { ANCHORS_PER_SIDE } from '../../utils/layout';
 
 const SIDE_POSITION: Record<HandleSide, Position> = {
@@ -62,6 +63,11 @@ function BoundedContextNodeComponent({ data, selected }: NodeProps<BoundedContex
         style={{ backgroundColor: data.color }}
       >
         <span className="truncate">{data.name}</span>
+        {data.domainClassification && (
+          <span className="shrink-0 rounded bg-white/25 px-1.5 text-[10px] font-medium uppercase tracking-wide">
+            {CLASSIFICATION_LABELS[data.domainClassification]}
+          </span>
+        )}
         {data.description && (
           <button
             type="button"
