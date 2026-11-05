@@ -1,24 +1,27 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ReactFlowProvider, useReactFlow, type Connection } from '@xyflow/react';
 import Canvas from './components/Canvas/Canvas';
 import Toolbar from './components/Toolbar/Toolbar';
-import ContextDialog from './components/Dialogs/ContextDialog';
-import RelationshipDialog from './components/Dialogs/RelationshipDialog';
+import SelectionPanel from './components/SelectionPanel/SelectionPanel';
 import { useContextMap } from './hooks/useContextMap';
-import { useMapUIState } from './hooks/useMapUIState';
 import { useMarkdownExport } from './hooks/useMarkdownExport';
 import { useMarkdownImport } from './hooks/useMarkdownImport';
 import { useJsonExport } from './hooks/useJsonExport';
 import { useJsonImport } from './hooks/useJsonImport';
 import { useFocusMode } from './hooks/useFocusMode';
 import type {
-  BoundedContextData,
   BoundedContextNode,
-  RelationshipData,
   RelationshipEdge as RelationshipEdgeType,
 } from './types/context-map';
 import { exportToPng } from './utils/png-export';
-import { FIT_VIEW_OPTIONS, NEW_CONTEXT_OFFSET_X, NEW_CONTEXT_OFFSET_Y, NEW_CONTEXT_JITTER_RANGE } from './constants/canvas';
+import { CONTEXT_COLORS, DEFAULT_RELATIONSHIP_DATA } from './constants/relationships';
+import {
+  FIT_VIEW_OPTIONS,
+  NEW_CONTEXT_OFFSET_X,
+  NEW_CONTEXT_OFFSET_Y,
+  NEW_CONTEXT_JITTER_RANGE,
+  NEW_CONTEXT_NAME,
+} from './constants/canvas';
 
 function AppInner() {
   const {
@@ -37,37 +40,18 @@ function AppInner() {
     bendEdge,
   } = useContextMap();
 
-  const {
-    pendingConnection,
-    setPendingConnection,
-    clearPendingConnection,
-    editingEdgeId,
-    setEditingEdgeId,
-    clearEditingEdge,
-    editingNodeId,
-    setEditingNodeId,
-    clearEditingNode,
-    resetAll,
-  } = useMapUIState();
-
   const handleConnect = useCallback(
     (connection: Connection) => {
-      setPendingConnection({
-        source: connection.source,
-        target: connection.target,
-        sourceHandle: connection.sourceHandle,
-        targetHandle: connection.targetHandle,
-      });
+      addEdge(connection, DEFAULT_RELATIONSHIP_DATA);
     },
-    [setPendingConnection]
+    [addEdge]
   );
 
   const handleReplaceAll = useCallback(
     (newNodes: BoundedContextNode[], newEdges: RelationshipEdgeType[]) => {
       replaceAll(newNodes, newEdges);
-      resetAll();
     },
-    [replaceAll, resetAll]
+    [replaceAll]
   );
 
   const { exportMarkdown } = useMarkdownExport(nodes, edges);
@@ -105,105 +89,39 @@ function AppInner() {
     requestAnimationFrame(() => fitView(FIT_VIEW_OPTIONS));
   }, [clearFocus, fitView]);
 
-  const [showContextDialog, setShowContextDialog] = useState(false);
-  const [addContextSeq, setAddContextSeq] = useState(0);
-
   // --- Tidy Up: re-pack into an overlap-free grid, then refit ---
   const handleTidy = useCallback(() => {
     tidyLayout();
     requestAnimationFrame(() => fitView(FIT_VIEW_OPTIONS));
   }, [tidyLayout, fitView]);
 
-  // --- Add Context ---
+  // --- Add Context: create it immediately, centred on the viewport, and select it ---
   const handleAddContext = useCallback(() => {
-    setAddContextSeq((seq) => seq + 1);
-    setShowContextDialog(true);
-  }, []);
-
-  const handleContextConfirm = useCallback(
-    (data: BoundedContextData) => {
-      if (editingNodeId) {
-        updateNode(editingNodeId, data);
-        clearEditingNode();
-      } else {
-        const { x, y, zoom } = getViewport();
-        const centerX = (-x + window.innerWidth / 2) / zoom;
-        const centerY = (-y + window.innerHeight / 2) / zoom;
-        addNode(data, {
-          x: centerX - NEW_CONTEXT_OFFSET_X + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
-          y: centerY - NEW_CONTEXT_OFFSET_Y + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
-        });
+    const { x, y, zoom } = getViewport();
+    const centerX = (-x + window.innerWidth / 2) / zoom;
+    const centerY = (-y + window.innerHeight / 2) / zoom;
+    addNode(
+      { name: NEW_CONTEXT_NAME, description: '', color: CONTEXT_COLORS[0] },
+      {
+        x: centerX - NEW_CONTEXT_OFFSET_X + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
+        y: centerY - NEW_CONTEXT_OFFSET_Y + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
       }
-      setShowContextDialog(false);
-    },
-    [addNode, updateNode, editingNodeId, clearEditingNode, getViewport]
-  );
+    );
+  }, [addNode, getViewport]);
 
-  const handleContextCancel = useCallback(() => {
-    setShowContextDialog(false);
-    clearEditingNode();
-  }, [clearEditingNode]);
-
-  // --- Node double-click → edit ---
-  const handleNodeDoubleClick = useCallback(
-    (nodeId: string) => {
-      setEditingNodeId(nodeId);
-      setShowContextDialog(true);
-    },
-    [setEditingNodeId]
-  );
-
-  // --- Relationship ---
-  const handleRelationshipConfirm = useCallback(
-    (data: RelationshipData) => {
-      if (editingEdgeId) {
-        updateEdge(editingEdgeId, data);
-        clearEditingEdge();
-      } else if (pendingConnection) {
-        addEdge(pendingConnection, data);
-        clearPendingConnection();
-      }
-    },
-    [pendingConnection, editingEdgeId, addEdge, updateEdge, clearPendingConnection, clearEditingEdge]
-  );
-
-  const handleRelationshipCancel = useCallback(() => {
-    clearPendingConnection();
-    clearEditingEdge();
-  }, [clearPendingConnection, clearEditingEdge]);
-
-  const handleEdgeClick = useCallback(
-    (edgeId: string) => {
-      setEditingEdgeId(edgeId);
-    },
-    [setEditingEdgeId]
-  );
-
-  // Resolve names for relationship dialog
-  const pendingSourceName =
-    pendingConnection
-      ? nodes.find((n) => n.id === pendingConnection.source)?.data.name ?? ''
-      : '';
-  const pendingTargetName =
-    pendingConnection
-      ? nodes.find((n) => n.id === pendingConnection.target)?.data.name ?? ''
-      : '';
-
-  const editingEdge = editingEdgeId
-    ? edges.find((e) => e.id === editingEdgeId)
-    : null;
-  const editSourceName = editingEdge
-    ? nodes.find((n) => n.id === editingEdge.source)?.data.name ?? ''
+  // --- Selection panel: derived from the map's own selection, not a second copy of UI state ---
+  const selectedNodes = useMemo(() => nodes.filter((n) => n.selected), [nodes]);
+  const selectedEdges = useMemo(() => edges.filter((e) => e.selected), [edges]);
+  const selectedNode =
+    selectedNodes.length === 1 && selectedEdges.length === 0 ? selectedNodes[0] : null;
+  const selectedEdge =
+    selectedEdges.length === 1 && selectedNodes.length === 0 ? selectedEdges[0] : null;
+  const selectedEdgeSourceName = selectedEdge
+    ? nodes.find((n) => n.id === selectedEdge.source)?.data.name ?? ''
     : '';
-  const editTargetName = editingEdge
-    ? nodes.find((n) => n.id === editingEdge.target)?.data.name ?? ''
+  const selectedEdgeTargetName = selectedEdge
+    ? nodes.find((n) => n.id === selectedEdge.target)?.data.name ?? ''
     : '';
-
-  const editingNode = editingNodeId
-    ? nodes.find((n) => n.id === editingNodeId)
-    : null;
-
-  const showRelDialog = !!(pendingConnection || editingEdgeId);
 
   return (
     <div className="w-full h-screen relative">
@@ -214,8 +132,6 @@ function AppInner() {
         onEdgesChange={onEdgesChange}
         onConnect={handleConnect}
         onReconnect={onReconnect}
-        onEdgeClick={handleEdgeClick}
-        onNodeDoubleClick={handleNodeDoubleClick}
         onNodeDragStop={separateNode}
         bendEdge={bendEdge}
       />
@@ -235,22 +151,13 @@ function AppInner() {
         hiddenCount={hiddenCount}
       />
 
-      <ContextDialog
-        open={showContextDialog}
-        dialogKey={editingNodeId ?? `new-${addContextSeq}`}
-        initial={editingNode?.data}
-        onConfirm={handleContextConfirm}
-        onCancel={handleContextCancel}
-      />
-
-      <RelationshipDialog
-        open={showRelDialog}
-        dialogKey={editingEdgeId ?? (pendingConnection ? 'pending' : 'new')}
-        sourceName={editingEdge ? editSourceName : pendingSourceName}
-        targetName={editingEdge ? editTargetName : pendingTargetName}
-        initial={editingEdge?.data}
-        onConfirm={handleRelationshipConfirm}
-        onCancel={handleRelationshipCancel}
+      <SelectionPanel
+        selectedNode={selectedNode}
+        selectedEdge={selectedEdge}
+        sourceName={selectedEdgeSourceName}
+        targetName={selectedEdgeTargetName}
+        onUpdateNode={updateNode}
+        onUpdateEdge={updateEdge}
       />
     </div>
   );

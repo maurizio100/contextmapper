@@ -28,6 +28,8 @@ function quadAt(
 
 export default function RelationshipEdge({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -35,8 +37,10 @@ export default function RelationshipEdge({
   data,
   selected,
 }: EdgeProps & { data?: RelationshipData }) {
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, getNode } = useReactFlow();
   const { bendEdge } = useEdgeActions();
+  const sourceName = getNode(source)?.data?.name as string | undefined;
+  const targetName = getNode(target)?.data?.name as string | undefined;
   const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const offsetStart = useRef({ x: 0, y: 0 });
@@ -161,6 +165,7 @@ export default function RelationshipEdge({
         }}
         markerEnd={markerEnd}
         markerStart={markerStart}
+        data-testid={sourceName && targetName ? `relationship-${sourceName}-${targetName}` : undefined}
       />
       {meta && (
         <EdgeLabelRenderer>

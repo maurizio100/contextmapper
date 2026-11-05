@@ -35,8 +35,6 @@ interface CanvasProps {
   onEdgesChange: (changes: EdgeChange<RelationshipEdge>[]) => void;
   onConnect: (connection: Connection) => void;
   onReconnect: (oldEdge: RelationshipEdge, newConnection: Connection) => void;
-  onEdgeClick: (edgeId: string) => void;
-  onNodeDoubleClick: (nodeId: string) => void;
   onNodeDragStop: (nodeId: string) => void;
   bendEdge: (id: string, offset: ControlOffset) => void;
 }
@@ -48,8 +46,6 @@ export default function Canvas({
   onEdgesChange,
   onConnect,
   onReconnect,
-  onEdgeClick,
-  onNodeDoubleClick,
   onNodeDragStop,
   bendEdge,
 }: CanvasProps) {
@@ -67,8 +63,6 @@ export default function Canvas({
         connectionRadius={45}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        onEdgeClick={(_event, edge) => onEdgeClick(edge.id)}
-        onNodeDoubleClick={(_event, node) => onNodeDoubleClick(node.id)}
         onNodeDragStop={(_event, node) => onNodeDragStop(node.id)}
         fitView
         deleteKeyCode={['Backspace', 'Delete']}

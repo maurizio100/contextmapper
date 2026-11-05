@@ -49,6 +49,7 @@ function BoundedContextNodeComponent({ data, selected }: NodeProps<BoundedContex
 
   return (
     <div
+      data-testid={`bounded-context-${data.name}`}
       className={`
         rounded-lg shadow-md border-2 bg-white min-w-[180px] max-w-[240px]
         transition-shadow cursor-grab active:cursor-grabbing

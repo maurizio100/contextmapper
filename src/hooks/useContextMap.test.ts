@@ -94,4 +94,58 @@ describe('useContextMap', () => {
     expect(result.current).not.toHaveProperty('clearEditingEdge');
     expect(result.current).not.toHaveProperty('clearEditingNode');
   });
+
+  it('addNode selects the new node and deselects existing nodes/edges', () => {
+    const existingA = aBoundedContext({ selected: true });
+    const existingB = aBoundedContext();
+    const existingEdge = aRelationship({
+      source: existingA.id,
+      target: existingB.id,
+      selected: true,
+    });
+    const { result } = renderHook(() => useContextMap());
+
+    act(() => {
+      result.current.replaceAll([existingA, existingB], [existingEdge]);
+    });
+
+    act(() => {
+      result.current.addNode({ name: 'New', description: '', color: '#3b82f6' }, { x: 0, y: 0 });
+    });
+
+    const newNode = result.current.nodes.find(
+      (n) => n.id !== existingA.id && n.id !== existingB.id
+    );
+    expect(newNode?.selected).toBe(true);
+    expect(result.current.nodes.find((n) => n.id === existingA.id)?.selected).toBe(false);
+    expect(result.current.edges.find((e) => e.id === existingEdge.id)?.selected).toBe(false);
+  });
+
+  it('addEdge selects the new edge and deselects existing nodes/edges', () => {
+    const a = aBoundedContext({ selected: true });
+    const b = aBoundedContext();
+    const existingEdge = aRelationship({ source: a.id, target: b.id, selected: true });
+    const { result } = renderHook(() => useContextMap());
+
+    act(() => {
+      result.current.replaceAll([a, b], [existingEdge]);
+    });
+
+    act(() => {
+      result.current.addEdge(
+        { source: a.id, target: b.id },
+        {
+          relationshipType: RelationshipType.CustomerSupplier,
+          sourceRole: 'upstream',
+          targetRole: 'downstream',
+          notes: '',
+        }
+      );
+    });
+
+    const newEdge = result.current.edges.find((e) => e.id !== existingEdge.id);
+    expect(newEdge?.selected).toBe(true);
+    expect(result.current.edges.find((e) => e.id === existingEdge.id)?.selected).toBe(false);
+    expect(result.current.nodes.every((n) => n.selected === false)).toBe(true);
+  });
 });
