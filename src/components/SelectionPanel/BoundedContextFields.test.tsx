@@ -78,4 +78,33 @@ describe('BoundedContextFields', () => {
 
     expect(onUpdate.mock.calls[0][1].owningTeam).toBe('Team Payments');
   });
+
+  it('omits a canvas key when cleared or whitespace-only and keeps the other keys', () => {
+    const node = aBoundedContext({
+      data: { name: 'Billing', description: '', color: '#3b82f6', purpose: 'Pay', keyTerms: 'Invoice' },
+    });
+    const onUpdate = vi.fn();
+    render(<BoundedContextFields node={node} teams={[]} otherTeams={[]} onUpdate={onUpdate} />);
+
+    fireEvent.change(screen.getByLabelText(/^purpose$/i), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText(/^key terms$/i), { target: { value: '   ' } });
+    fireEvent.change(screen.getByLabelText(/^business decisions$/i), { target: { value: 'Dunning' } });
+
+    const first = onUpdate.mock.calls[0][1];
+    expect('purpose' in first).toBe(false);
+    expect(first.keyTerms).toBe('Invoice');
+    const second = onUpdate.mock.calls[1][1];
+    expect('keyTerms' in second).toBe(false);
+    expect(onUpdate.mock.calls[2][1].businessDecisions).toBe('Dunning');
+  });
+
+  it('shows the hint only while no canvas field is recorded', () => {
+    const empty = aBoundedContext({ data: { name: 'Catalog', description: '', color: '#3b82f6' } });
+    const { unmount } = render(<BoundedContextFields node={empty} teams={[]} otherTeams={[]} onUpdate={vi.fn()} />);
+    expect(screen.getByText('Nothing recorded yet.')).toBeInTheDocument();
+    unmount();
+    const filled = aBoundedContext({ data: { name: 'Billing', description: '', color: '#3b82f6', purpose: 'x' } });
+    render(<BoundedContextFields node={filled} teams={[]} otherTeams={[]} onUpdate={vi.fn()} />);
+    expect(screen.queryByText('Nothing recorded yet.')).not.toBeInTheDocument();
+  });
 });
