@@ -8,6 +8,7 @@ import { useMarkdownExport } from './hooks/useMarkdownExport';
 import { useMarkdownImport } from './hooks/useMarkdownImport';
 import { useJsonExport } from './hooks/useJsonExport';
 import { useJsonImport } from './hooks/useJsonImport';
+import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 import { useFocusMode } from './hooks/useFocusMode';
 import type {
   BoundedContextNode,
@@ -38,7 +39,12 @@ function AppInner() {
     tidyLayout,
     separateNode,
     bendEdge,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useContextMap();
+  useUndoRedoShortcuts({ undo, redo });
 
   const handleConnect = useCallback(
     (connection: Connection) => {
@@ -138,6 +144,10 @@ function AppInner() {
       <Toolbar
         onAddContext={handleAddContext}
         onTidy={handleTidy}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
         onImport={importMarkdown}
         onExport={exportMarkdown}
         onImportJson={importJson}

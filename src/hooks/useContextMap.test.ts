@@ -148,4 +148,78 @@ describe('useContextMap', () => {
     expect(result.current.edges.find((e) => e.id === existingEdge.id)?.selected).toBe(false);
     expect(result.current.nodes.every((n) => n.selected === false)).toBe(true);
   });
+
+  describe('undo history granularity', () => {
+    function seed() {
+      const a = aBoundedContext({ data: { name: 'A', description: '', color: '#000' } });
+      const b = aBoundedContext({ data: { name: 'B', description: '', color: '#000' } });
+      const edge = aRelationship({ source: a.id, target: b.id });
+      localStorage.setItem('context-map-data', JSON.stringify({ nodes: [a, b], edges: [edge] }));
+      return { a, b, edge, hook: renderHook(() => useContextMap()) };
+    }
+
+    async function countSteps(result: { current: ReturnType<typeof useContextMap> }) {
+      let steps = 0;
+      while (result.current.canUndo) {
+        await act(async () => result.current.undo());
+        steps++;
+      }
+      return steps;
+    }
+
+    it('selection and dimension changes create no undo step', async () => {
+      const { a, hook } = seed();
+      await act(async () => {
+        hook.result.current.onNodesChange([
+          { type: 'select', id: a.id, selected: true },
+          { type: 'dimensions', id: a.id, dimensions: { width: 10, height: 10 } },
+        ]);
+      });
+      expect(hook.result.current.canUndo).toBe(false);
+    });
+
+    it('one drag plus separateNode is a single step', async () => {
+      const { a, hook } = seed();
+      for (const x of [1, 2, 3]) {
+        await act(async () => {
+          hook.result.current.onNodesChange([
+            { type: 'position', id: a.id, position: { x, y: 0 }, dragging: true },
+          ]);
+        });
+      }
+      await act(async () => {
+        hook.result.current.onNodesChange([
+          { type: 'position', id: a.id, position: { x: 3, y: 0 }, dragging: false },
+        ]);
+        hook.result.current.separateNode(a.id);
+      });
+      expect(await countSteps(hook.result)).toBe(1);
+      expect(hook.result.current.nodes.find((n) => n.id === a.id)?.position).toEqual({ x: 0, y: 0 });
+    });
+
+    it('consecutive updateNode on the same id coalesce; a different id does not', async () => {
+      const { a, b, hook } = seed();
+      const data = (name: string) => ({ name, description: '', color: '#000' });
+      for (const name of ['A1', 'A2', 'A3']) {
+        await act(async () => hook.result.current.updateNode(a.id, data(name)));
+      }
+      await act(async () => hook.result.current.updateNode(b.id, data('B1')));
+      await act(async () => hook.result.current.updateNode(a.id, data('A4')));
+      expect(await countSteps(hook.result)).toBe(3);
+    });
+
+    it('removing a node and its edges in one tick is one step', async () => {
+      const { a, edge, hook } = seed();
+      await act(async () => {
+        hook.result.current.onNodesChange([{ type: 'remove', id: a.id }]);
+        hook.result.current.onEdgesChange([{ type: 'remove', id: edge.id }]);
+      });
+      expect(hook.result.current.nodes).toHaveLength(1);
+      expect(hook.result.current.edges).toHaveLength(0);
+      await act(async () => hook.result.current.undo());
+      expect(hook.result.current.nodes).toHaveLength(2);
+      expect(hook.result.current.edges).toHaveLength(1);
+      expect(hook.result.current.canUndo).toBe(false);
+    });
+  });
 });
