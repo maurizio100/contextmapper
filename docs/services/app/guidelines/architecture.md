@@ -28,6 +28,9 @@ first, then call it from a hook.
 - **Undo history.** `useContextMap` keeps the undo/redo history as snapshots of the map. Every mutation
   that changes map content records a checkpoint before changing state; selection, dimension and focus
   changes never do. A new checkpoint clears the redo history.
+- **Actions are commands.** Every action the modeller can invoke is a `Command` in the App's registry;
+  the command palette, keyboard shortcuts and shortcut hints in tooltips all derive from it. Shortcuts
+  are bound only through `useShortcuts`, never with ad-hoc `keydown` listeners.
 - **Map state and UI state are separate.** `useContextMap` owns the map (contexts, relationships,
   positions). Selection is React Flow's `selected` flag on nodes and edges, read by deriving from
   the map (as focus mode does), never kept as a second copy; the element being edited is the selected

@@ -1,5 +1,10 @@
-import { useReactFlow } from '@xyflow/react';
-import { FIT_VIEW_OPTIONS } from '../../constants/canvas';
+import {
+  formatShortcut,
+  isMacPlatform,
+  UNDO_SHORTCUT,
+  REDO_SHORTCUT,
+  FOCUS_SHORTCUT,
+} from '../../utils/commands';
 import PrimaryButton from '../ui/PrimaryButton';
 import SecondaryButton from '../ui/SecondaryButton';
 import ModeActiveButton from '../ui/ModeActiveButton';
@@ -44,7 +49,7 @@ export default function Toolbar({
   visibleCount,
   hiddenCount,
 }: ToolbarProps) {
-  const { fitView } = useReactFlow();
+  const isMac = isMacPlatform();
 
   return (
     <div className="absolute top-4 left-4 z-10 flex gap-2">
@@ -60,7 +65,7 @@ export default function Toolbar({
       <SecondaryButton
         onClick={onUndo}
         disabled={!canUndo}
-        title="Undo (Ctrl+Z)"
+        title={`Undo (${formatShortcut(UNDO_SHORTCUT, isMac)})`}
         className="px-3 py-2 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Undo
@@ -68,13 +73,10 @@ export default function Toolbar({
       <SecondaryButton
         onClick={onRedo}
         disabled={!canRedo}
-        title="Redo (Shift+Ctrl+Z)"
+        title={`Redo (${formatShortcut(REDO_SHORTCUT, isMac)})`}
         className="px-3 py-2 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Redo
-      </SecondaryButton>
-      <SecondaryButton onClick={() => fitView(FIT_VIEW_OPTIONS)} className="px-3 py-2 rounded-lg shadow-sm">
-        Fit View
       </SecondaryButton>
       <SecondaryButton onClick={onTidy} className="px-3 py-2 rounded-lg shadow-sm">
         Tidy Up
@@ -96,7 +98,7 @@ export default function Toolbar({
         <SecondaryButton
           onClick={onFocus}
           disabled={!canFocus}
-          title="Select one context to see it and its neighbours, or several to show just those"
+          title={`Select one context to see it and its neighbours, or several to show just those (${formatShortcut(FOCUS_SHORTCUT, isMac)})`}
           className="px-3 py-2 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Focus Selection
