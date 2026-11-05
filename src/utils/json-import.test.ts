@@ -61,3 +61,28 @@ describe('JSON import domain classification', () => {
     expect(result.warnings).toHaveLength(1);
   });
 });
+
+describe('parseJson owning team', () => {
+  const build = (extra: Record<string, unknown>) => {
+    const node = aBoundedContext({ data: { name: 'Billing', description: '', color: '#3b82f6' } });
+    const doc = JSON.parse(generateJson([node], []));
+    Object.assign(doc.nodes[0].data, extra);
+    return JSON.stringify(doc);
+  };
+
+  it('accepts a node without an owning team', () => {
+    const result = parseJson(build({}));
+    expect(result.warnings).toEqual([]);
+    expect(result.nodes[0].data.owningTeam).toBeUndefined();
+  });
+
+  it('keeps a string owning team', () => {
+    expect(parseJson(build({ owningTeam: 'Team Payments' })).nodes[0].data.owningTeam).toBe('Team Payments');
+  });
+
+  it('skips a node with a non-string owning team and warns', () => {
+    const result = parseJson(build({ owningTeam: 5 }));
+    expect(result.nodes).toEqual([]);
+    expect(result.warnings).toHaveLength(1);
+  });
+});
