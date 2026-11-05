@@ -1,0 +1,97 @@
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import App from '../App';
+import { aBoundedContext } from '../test/builders';
+import { generateJson } from '../utils/json-export';
+
+function seedTwoContexts() {
+  const a = aBoundedContext({
+    id: 'ctx-a',
+    data: { name: 'Billing', description: '', color: '#3b82f6' },
+    position: { x: 0, y: 0 },
+  });
+  const b = aBoundedContext({
+    id: 'ctx-b',
+    data: { name: 'Shipping', description: '', color: '#10b981' },
+    position: { x: 400, y: 0 },
+  });
+  localStorage.setItem(
+    'context-map-data',
+    JSON.stringify({ nodes: [a, b], edges: [] })
+  );
+  return { a, b };
+}
+
+/** Drives a React Flow handle-to-handle connection drag between two nodes. */
+function connect(sourceNodeId: string, targetNodeId: string) {
+  const sourceHandle = document.querySelector(
+    `.react-flow__handle[data-nodeid="${sourceNodeId}"]`
+  ) as HTMLElement;
+  const targetHandle = document.querySelector(
+    `.react-flow__handle[data-nodeid="${targetNodeId}"]`
+  ) as HTMLElement;
+  expect(sourceHandle).toBeTruthy();
+  expect(targetHandle).toBeTruthy();
+
+  vi.spyOn(document, 'elementFromPoint').mockReturnValue(targetHandle);
+
+  // React Flow's connection drag listens for mouse (not pointer) events.
+  fireEvent.mouseDown(sourceHandle, { clientX: 0, clientY: 0, button: 0 });
+  fireEvent.mouseMove(document, { clientX: 50, clientY: 0 });
+  fireEvent.mouseUp(document, { clientX: 50, clientY: 0 });
+}
+
+function relationshipDialog(): HTMLDialogElement {
+  const heading = screen.getByText('New Relationship');
+  const dialog = heading.closest('dialog');
+  if (!dialog) throw new Error('relationship dialog not found');
+  return dialog;
+}
+
+describe('STORY-002 one mutation path', () => {
+  it('connecting two nodes still opens the relationship dialog', () => {
+    const { a, b } = seedTwoContexts();
+    render(<App />);
+
+    connect(a.id, b.id);
+
+    expect(relationshipDialog().open).toBe(true);
+  });
+
+  it('importing JSON while a dialog is open clears pendingConnection/editingEdgeId/editingNodeId', async () => {
+    const { a, b } = seedTwoContexts();
+    render(<App />);
+
+    connect(a.id, b.id);
+    expect(relationshipDialog().open).toBe(true);
+
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const createdInputs: HTMLInputElement[] = [];
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const el = originalCreateElement(tag);
+      if (tag === 'input') createdInputs.push(el as HTMLInputElement);
+      return el;
+    });
+
+    fireEvent.click(screen.getByText('Import JSON'));
+
+    const input = createdInputs.at(-1);
+    if (!input) throw new Error('import did not create a file input');
+
+    const imported = aBoundedContext({
+      id: 'ctx-c',
+      data: { name: 'Catalog', description: '', color: '#f59e0b' },
+    });
+    const json = generateJson([imported], []);
+    const file = new File([json], 'map.json', { type: 'application/json' });
+    Object.defineProperty(input, 'files', { value: [file] });
+
+    fireEvent.change(input);
+    // input.onchange reads the file asynchronously before calling replaceAll.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(relationshipDialog().open).toBe(false);
+  });
+});

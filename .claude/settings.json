@@ -4,7 +4,8 @@
       "Skill",
       "Edit",
       "Write",
-      "Bash"
+      "Bash",
+      "Bash(python3 *review.py* merge *)"
     ],
     "ask": [
       "Bash(gh pr merge:*)"

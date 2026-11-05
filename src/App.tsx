@@ -1,18 +1,23 @@
 import { useCallback, useState } from 'react';
-import { ReactFlowProvider, useReactFlow } from '@xyflow/react';
+import { ReactFlowProvider, useReactFlow, type Connection } from '@xyflow/react';
 import Canvas from './components/Canvas/Canvas';
 import Toolbar from './components/Toolbar/Toolbar';
 import ContextDialog from './components/Dialogs/ContextDialog';
 import RelationshipDialog from './components/Dialogs/RelationshipDialog';
 import { useContextMap } from './hooks/useContextMap';
+import { useMapUIState } from './hooks/useMapUIState';
 import { useMarkdownExport } from './hooks/useMarkdownExport';
 import { useMarkdownImport } from './hooks/useMarkdownImport';
 import { useJsonExport } from './hooks/useJsonExport';
 import { useJsonImport } from './hooks/useJsonImport';
 import { useFocusMode } from './hooks/useFocusMode';
-import type { BoundedContextData, RelationshipData } from './types/context-map';
+import type {
+  BoundedContextData,
+  BoundedContextNode,
+  RelationshipData,
+  RelationshipEdge as RelationshipEdgeType,
+} from './types/context-map';
 import { exportToPng } from './utils/png-export';
-import { wasDraggingRecently } from './components/Canvas/dragging';
 
 function AppInner() {
   const {
@@ -20,7 +25,6 @@ function AppInner() {
     edges,
     onNodesChange,
     onEdgesChange,
-    onConnect,
     onReconnect,
     addNode,
     updateNode,
@@ -29,7 +33,12 @@ function AppInner() {
     replaceAll,
     tidyLayout,
     separateNode,
+    bendEdge,
+  } = useContextMap();
+
+  const {
     pendingConnection,
+    setPendingConnection,
     clearPendingConnection,
     editingEdgeId,
     setEditingEdgeId,
@@ -37,16 +46,37 @@ function AppInner() {
     editingNodeId,
     setEditingNodeId,
     clearEditingNode,
-  } = useContextMap();
+    resetAll,
+  } = useMapUIState();
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      setPendingConnection({
+        source: connection.source,
+        target: connection.target,
+        sourceHandle: connection.sourceHandle,
+        targetHandle: connection.targetHandle,
+      });
+    },
+    [setPendingConnection]
+  );
+
+  const handleReplaceAll = useCallback(
+    (newNodes: BoundedContextNode[], newEdges: RelationshipEdgeType[]) => {
+      replaceAll(newNodes, newEdges);
+      resetAll();
+    },
+    [replaceAll, resetAll]
+  );
 
   const { exportMarkdown } = useMarkdownExport(nodes, edges);
   const { importMarkdown } = useMarkdownImport({
-    replaceAll,
+    replaceAll: handleReplaceAll,
     hasExistingMap: nodes.length > 0 || edges.length > 0,
   });
   const { exportJson } = useJsonExport(nodes, edges);
   const { importJson } = useJsonImport({
-    replaceAll,
+    replaceAll: handleReplaceAll,
     hasExistingMap: nodes.length > 0 || edges.length > 0,
   });
   const reactFlowInstance = useReactFlow();
@@ -143,7 +173,6 @@ function AppInner() {
 
   const handleEdgeClick = useCallback(
     (edgeId: string) => {
-      if (wasDraggingRecently()) return;
       setEditingEdgeId(edgeId);
     },
     [setEditingEdgeId]
@@ -182,11 +211,12 @@ function AppInner() {
         edges={visibleEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onConnect={handleConnect}
         onReconnect={onReconnect}
         onEdgeClick={handleEdgeClick}
         onNodeDoubleClick={handleNodeDoubleClick}
         onNodeDragStop={separateNode}
+        bendEdge={bendEdge}
       />
       <Toolbar
         onAddContext={handleAddContext}
