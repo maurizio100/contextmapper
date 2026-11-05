@@ -1,10 +1,11 @@
 import { toPng } from 'html-to-image';
 import type { ReactFlowInstance } from '@xyflow/react';
 import { downloadDataUrl } from './download';
+import { FIT_VIEW_OPTIONS } from '../constants/canvas';
 
 export async function exportToPng(reactFlowInstance: ReactFlowInstance) {
   // Fit view first so everything is visible
-  reactFlowInstance.fitView({ padding: 0.2 });
+  reactFlowInstance.fitView(FIT_VIEW_OPTIONS);
 
   // Small delay for the fitView animation to settle
   await new Promise((r) => setTimeout(r, 200));

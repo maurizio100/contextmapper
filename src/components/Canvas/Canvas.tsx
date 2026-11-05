@@ -17,6 +17,7 @@ import type { NodeChange, EdgeChange, Connection } from '@xyflow/react';
 import BoundedContextNodeComponent from './BoundedContextNode';
 import RelationshipEdgeComponent from './RelationshipEdge';
 import { EdgeActionsContext } from '../../hooks/useEdgeActions';
+import { ROLE_COLORS } from '../../constants/colors';
 
 // Module-level constants — avoids React Flow re-render pitfall
 const nodeTypes: NodeTypes = {
@@ -94,7 +95,7 @@ export default function Canvas({
               markerHeight="8"
               orient="auto"
             >
-              <path d="M 1 1 L 11 6 L 1 11 z" fill="#f97316" />
+              <path d="M 1 1 L 11 6 L 1 11 z" fill={ROLE_COLORS.downstream.hex} />
             </marker>
             <marker
               id="arrow-downstream-reverse"
@@ -105,7 +106,7 @@ export default function Canvas({
               markerHeight="8"
               orient="auto"
             >
-              <path d="M 11 1 L 1 6 L 11 11 z" fill="#f97316" />
+              <path d="M 11 1 L 1 6 L 11 11 z" fill={ROLE_COLORS.downstream.hex} />
             </marker>
           </defs>
         </svg>

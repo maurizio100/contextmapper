@@ -18,6 +18,7 @@ import type {
   RelationshipEdge as RelationshipEdgeType,
 } from './types/context-map';
 import { exportToPng } from './utils/png-export';
+import { FIT_VIEW_OPTIONS, NEW_CONTEXT_OFFSET_X, NEW_CONTEXT_OFFSET_Y, NEW_CONTEXT_JITTER_RANGE } from './constants/canvas';
 
 function AppInner() {
   const {
@@ -96,12 +97,12 @@ function AppInner() {
   // --- Focus: restrict the canvas to the selection, then refit ---
   const handleFocus = useCallback(() => {
     focusOnSelection();
-    requestAnimationFrame(() => fitView({ padding: 0.2 }));
+    requestAnimationFrame(() => fitView(FIT_VIEW_OPTIONS));
   }, [focusOnSelection, fitView]);
 
   const handleClearFocus = useCallback(() => {
     clearFocus();
-    requestAnimationFrame(() => fitView({ padding: 0.2 }));
+    requestAnimationFrame(() => fitView(FIT_VIEW_OPTIONS));
   }, [clearFocus, fitView]);
 
   const [showContextDialog, setShowContextDialog] = useState(false);
@@ -110,7 +111,7 @@ function AppInner() {
   // --- Tidy Up: re-pack into an overlap-free grid, then refit ---
   const handleTidy = useCallback(() => {
     tidyLayout();
-    requestAnimationFrame(() => fitView({ padding: 0.2 }));
+    requestAnimationFrame(() => fitView(FIT_VIEW_OPTIONS));
   }, [tidyLayout, fitView]);
 
   // --- Add Context ---
@@ -129,8 +130,8 @@ function AppInner() {
         const centerX = (-x + window.innerWidth / 2) / zoom;
         const centerY = (-y + window.innerHeight / 2) / zoom;
         addNode(data, {
-          x: centerX - 90 + Math.random() * 40 - 20,
-          y: centerY - 40 + Math.random() * 40 - 20,
+          x: centerX - NEW_CONTEXT_OFFSET_X + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
+          y: centerY - NEW_CONTEXT_OFFSET_Y + Math.random() * NEW_CONTEXT_JITTER_RANGE - NEW_CONTEXT_JITTER_RANGE / 2,
         });
       }
       setShowContextDialog(false);

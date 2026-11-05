@@ -29,7 +29,9 @@
 
 ## Duplication and constants
 - Values with domain meaning — clarity colours, role colours, pattern abbreviations — are defined once
-  in `constants/` and imported everywhere they are used, including the UI, exports and legends.
+  in `constants/` and imported everywhere they are used, including the UI, exports and legends:
+  colours in `constants/colors.ts`, canvas settings (fit-view options, new-context placement) in
+  `constants/canvas.ts`, relationship-pattern metadata in `constants/relationships.ts`.
 - Repeated UI with one meaning is one component: buttons per role (see
   [`../design-guidelines.md`](../design-guidelines.md)), edge badges, dialog/panel field sections.
 - Numbers with meaning are named constants (`FIT_VIEW_PADDING`, `NEW_CONTEXT_JITTER`), not inline literals.

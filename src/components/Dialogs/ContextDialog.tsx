@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { BoundedContextData } from '../../types/context-map';
 import { CONTEXT_COLORS } from '../../constants/relationships';
+import PrimaryButton from '../ui/PrimaryButton';
+import SecondaryButton from '../ui/SecondaryButton';
 
 interface ContextDialogProps {
   open: boolean;
@@ -113,19 +115,12 @@ function ContextDialogForm({ initial, onConfirm, onCancel }: ContextDialogFormPr
         </fieldset>
 
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-          >
+          <SecondaryButton type="button" onClick={onCancel} className="px-4 py-2 rounded-md">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 font-medium"
-          >
+          </SecondaryButton>
+          <PrimaryButton type="submit" className="px-4 py-2 rounded-md">
             {initial ? 'Save' : 'Create'}
-          </button>
+          </PrimaryButton>
         </div>
       </form>
   );
