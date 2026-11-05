@@ -16,9 +16,9 @@ function clickNode(name: string) {
   fireEvent.click(nodeEl);
 }
 
-/** Clicks a relationship edge on the canvas by its id. */
-function clickEdge(edgeId: string) {
-  fireEvent.click(screen.getByTestId(`rf__edge-${edgeId}`));
+/** Clicks a relationship edge on the canvas by its source and target names. */
+function clickEdge(sourceName: string, targetName: string) {
+  fireEvent.click(screen.getByTestId(`relationship-${sourceName}-${targetName}`));
 }
 
 describe('STORY-006 Edit the selected bounded context or relationship in place', () => {
@@ -64,7 +64,7 @@ describe('STORY-006 Edit the selected bounded context or relationship in place',
     );
     render(<App />);
 
-    clickEdge('rel-1');
+    clickEdge('Billing', 'Shipping');
 
     const panel = screen.getByRole('complementary');
     expect(
@@ -87,7 +87,7 @@ describe('STORY-006 Edit the selected bounded context or relationship in place',
     const nameInput = within(panel).getByLabelText(/^name$/i);
     fireEvent.change(nameInput, { target: { value: 'Invoicing' } });
 
-    const nodeEl = screen.getByTestId('rf__node-ctx-billing');
+    const nodeEl = screen.getByTestId('bounded-context-Invoicing');
     expect(within(nodeEl).getByText('Invoicing')).toBeInTheDocument();
   });
 
@@ -131,7 +131,7 @@ describe('STORY-006 Edit the selected bounded context or relationship in place',
     fireEvent.change(nameInput, { target: { value: '' } });
 
     expect(screen.getByText('A bounded context needs a name.')).toBeInTheDocument();
-    const nodeEl = screen.getByTestId('rf__node-ctx-billing');
+    const nodeEl = screen.getByTestId('bounded-context-Billing');
     expect(within(nodeEl).getByText('Billing')).toBeInTheDocument();
   });
 });

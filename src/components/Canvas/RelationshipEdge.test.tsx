@@ -19,6 +19,8 @@ vi.mock('@xyflow/react', async (importOriginal) => {
       // scenario is red regardless, but a no-op keeps the drag sequence
       // from throwing before bendEdge's absence can be observed.
       setEdges: vi.fn(),
+      // Resolves source/target node names for the relationship-<source>-<target> test id.
+      getNode: (id: string) => ({ data: { name: id === 'a' ? 'A' : 'B' } }),
     }),
     EdgeLabelRenderer: ({ children }: { children: ReactNode }) => children,
   };
