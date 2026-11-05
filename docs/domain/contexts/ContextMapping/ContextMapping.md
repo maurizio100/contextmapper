@@ -21,3 +21,4 @@ Terms: [`glossary.md`](glossary.md) — this context's own vocabulary, in the fo
 - Every change to the context map can be undone and redone within a session. A new change clears what could be redone. Focusing and selecting are not changes. The undo history is not kept across reloads.
 - A bounded context has at most one domain classification (core, supporting or generic). A new bounded context has none, and classifying it never changes its colour.
 - A bounded context has at most one owning team. Team names that differ only in case or surrounding spaces denote the same team.
+- A bounded context's canvas fields (purpose, key terms, business decisions) are optional free text. They belong to its details, not to the drawn context map, and an empty field is not recorded.
