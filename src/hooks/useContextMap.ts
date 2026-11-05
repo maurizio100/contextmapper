@@ -295,7 +295,8 @@ export function useContextMap() {
 
   const bendEdge = useCallback(
     (id: string, offset: ControlOffset) => {
-      checkpoint('edge:' + id);
+      // Called once per bend gesture (on release), so each gesture is its own step.
+      checkpoint();
       applyEdges((eds) =>
         eds.map((e) =>
           e.id === id && e.data ? { ...e, data: { ...e.data, controlOffset: offset } } : e

@@ -208,6 +208,29 @@ describe('useContextMap', () => {
       expect(await countSteps(hook.result)).toBe(3);
     });
 
+    it('bendEdge is one step per gesture: two separate bends of one edge are two steps', async () => {
+      const { edge, hook } = seed();
+      await act(async () => hook.result.current.bendEdge(edge.id, { x: 10, y: 10 }));
+      await act(async () => hook.result.current.bendEdge(edge.id, { x: 20, y: 20 }));
+      expect(await countSteps(hook.result)).toBe(2);
+    });
+
+    it('one bend gesture (a single bendEdge on release) is one step', async () => {
+      const { edge, hook } = seed();
+      await act(async () => hook.result.current.bendEdge(edge.id, { x: 10, y: 10 }));
+      expect(await countSteps(hook.result)).toBe(1);
+      expect(hook.result.current.edges[0].data?.controlOffset).toBeUndefined();
+    });
+
+    it('updateEdge text edits coalesce but do not merge into a preceding bend', async () => {
+      const { edge, hook } = seed();
+      const data = edge.data!;
+      await act(async () => hook.result.current.bendEdge(edge.id, { x: 10, y: 10 }));
+      await act(async () => hook.result.current.updateEdge(edge.id, { ...data, description: 'x' }));
+      await act(async () => hook.result.current.updateEdge(edge.id, { ...data, description: 'xy' }));
+      expect(await countSteps(hook.result)).toBe(2);
+    });
+
     it('removing a node and its edges in one tick is one step', async () => {
       const { a, edge, hook } = seed();
       await act(async () => {
