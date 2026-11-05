@@ -7,18 +7,11 @@ import {
 } from '@xyflow/react';
 import type { Clarity, ControlOffset, RelationshipData } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
+import { CLARITY_COLORS, CLARITY_UNSET_STROKE, ROLE_COLORS } from '../../constants/colors';
 import { useEdgeActions } from '../../hooks/useEdgeActions';
 
-const CLARITY_STROKE: Record<string, { normal: string; selected: string }> = {
-  clear:              { normal: '#22c55e', selected: '#15803d' },
-  unsure:             { normal: '#3b82f6', selected: '#1d4ed8' },
-  'needs-improvement': { normal: '#ef4444', selected: '#b91c1c' },
-  none:               { normal: '#64748b', selected: '#3b82f6' },
-};
-
 function strokeColor(clarity: Clarity | undefined, selected: boolean | undefined): string {
-  const key = clarity ?? 'none';
-  const colors = CLARITY_STROKE[key] ?? CLARITY_STROKE.none;
+  const colors = clarity ? CLARITY_COLORS[clarity] : CLARITY_UNSET_STROKE;
   return selected ? colors.selected : colors.normal;
 }
 
@@ -247,8 +240,8 @@ export default function RelationshipEdge({
                   absolute pointer-events-none
                   px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none
                   ${data.sourceRole === 'upstream'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-orange-500 text-white'}
+                    ? ROLE_COLORS.upstream.badgeClass
+                    : ROLE_COLORS.downstream.badgeClass}
                 `}
                 style={{
                   transform: `translate(-50%, -50%) translate(${srcBadgeX}px, ${srcBadgeY}px)`,
@@ -261,8 +254,8 @@ export default function RelationshipEdge({
                   absolute pointer-events-none
                   px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none
                   ${data.targetRole === 'upstream'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-orange-500 text-white'}
+                    ? ROLE_COLORS.upstream.badgeClass
+                    : ROLE_COLORS.downstream.badgeClass}
                 `}
                 style={{
                   transform: `translate(-50%, -50%) translate(${tgtBadgeX}px, ${tgtBadgeY}px)`,

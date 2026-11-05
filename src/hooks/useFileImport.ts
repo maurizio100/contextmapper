@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { BoundedContextNode, RelationshipEdge } from '../types/context-map';
+import { FIT_VIEW_OPTIONS } from '../constants/canvas';
 
 export interface FileImportResult {
   nodes: BoundedContextNode[];
@@ -69,7 +70,7 @@ export function useFileImport({ accept, parse, replaceAll, hasExistingMap }: Opt
 
       // Fit the restored content into view after the next render.
       requestAnimationFrame(() => {
-        fitView({ padding: 0.2 });
+        fitView(FIT_VIEW_OPTIONS);
       });
 
       if (result.warnings.length > 0) {

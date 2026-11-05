@@ -1,12 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import { RelationshipType, type Clarity, type RelationshipData, type Role } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
+import { CLARITY_COLORS, ROLE_COLORS } from '../../constants/colors';
+import PrimaryButton from '../ui/PrimaryButton';
+import SecondaryButton from '../ui/SecondaryButton';
 
-const CLARITY_OPTIONS: { value: Clarity; label: string; color: string; activeClass: string }[] = [
-  { value: 'clear',              label: 'Clear',            color: '#22c55e', activeClass: 'border-green-500 bg-green-50 text-green-800' },
-  { value: 'unsure',             label: 'Unsure',           color: '#3b82f6', activeClass: 'border-blue-500 bg-blue-50 text-blue-800' },
-  { value: 'needs-improvement',  label: 'Needs improvement', color: '#ef4444', activeClass: 'border-red-500 bg-red-50 text-red-800' },
-];
+const CLARITY_LABELS: Record<Clarity, string> = {
+  clear: 'Clear',
+  unsure: 'Unsure',
+  'needs-improvement': 'Needs improvement',
+};
+
+const CLARITY_ACTIVE_CLASSES: Record<Clarity, string> = {
+  clear: 'border-green-500 bg-green-50 text-green-800',
+  unsure: 'border-blue-500 bg-blue-50 text-blue-800',
+  'needs-improvement': 'border-red-500 bg-red-50 text-red-800',
+};
+
+const CLARITY_OPTIONS: { value: Clarity; label: string; color: string; activeClass: string }[] =
+  (Object.keys(CLARITY_COLORS) as Clarity[]).map((value) => ({
+    value,
+    label: CLARITY_LABELS[value],
+    color: CLARITY_COLORS[value].normal,
+    activeClass: CLARITY_ACTIVE_CLASSES[value],
+  }));
 
 interface RelationshipDialogProps {
   open: boolean;
@@ -228,7 +245,7 @@ function RelationshipDialogForm({
                 {/* Source context */}
                 <div className="flex-1 min-w-0 px-3 py-2.5 bg-white">
                   <span className={`block text-[10px] font-bold uppercase tracking-wide mb-0.5 ${
-                    sourceRole === 'upstream' ? 'text-blue-500' : 'text-orange-500'
+                    sourceRole === 'upstream' ? ROLE_COLORS.upstream.textClass : ROLE_COLORS.downstream.textClass
                   }`}>
                     {sourceRole === 'upstream' ? 'Upstream' : 'Downstream'}
                   </span>
@@ -252,7 +269,7 @@ function RelationshipDialogForm({
                 {/* Target context */}
                 <div className="flex-1 min-w-0 px-3 py-2.5 bg-white text-right">
                   <span className={`block text-[10px] font-bold uppercase tracking-wide mb-0.5 ${
-                    targetRole === 'upstream' ? 'text-blue-500' : 'text-orange-500'
+                    targetRole === 'upstream' ? ROLE_COLORS.upstream.textClass : ROLE_COLORS.downstream.textClass
                   }`}>
                     {targetRole === 'upstream' ? 'Upstream' : 'Downstream'}
                   </span>
@@ -400,19 +417,12 @@ function RelationshipDialogForm({
 
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-          >
+          <SecondaryButton type="button" onClick={onCancel} className="px-4 py-2 rounded-lg">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors"
-          >
+          </SecondaryButton>
+          <PrimaryButton type="submit" className="px-4 py-2 rounded-lg">
             {initial ? 'Save' : 'Create'}
-          </button>
+          </PrimaryButton>
         </div>
 
       </form>
