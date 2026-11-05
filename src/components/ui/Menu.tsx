@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import SecondaryButton from './SecondaryButton';
 
 export interface MenuItem {
   label: string;
@@ -45,15 +46,15 @@ export default function Menu({ label, groups, className = '' }: MenuProps) {
 
   return (
     <div ref={containerRef} className="relative inline-block">
-      <button
+      <SecondaryButton
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className={`text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors ${className}`}
+        className={className}
       >
         {label}
-      </button>
+      </SecondaryButton>
       {open && (
         <div
           role="menu"
