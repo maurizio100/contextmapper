@@ -1,5 +1,6 @@
 import type { BoundedContextNode, RelationshipEdge } from '../types/context-map';
 import schema from '../schema/context-map.schema.json';
+import { downloadBlob } from './download';
 
 // Bump when the on-disk shape changes in a non-backwards-compatible way.
 // Kept in sync with the `version` const in context-map.schema.json.
@@ -35,11 +36,5 @@ export function generateJson(
 }
 
 export function downloadJson(content: string, filename = 'context-map.json') {
-  const blob = new Blob([content], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(content, filename, 'application/json');
 }
