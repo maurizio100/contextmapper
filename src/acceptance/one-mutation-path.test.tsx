@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import App from '../App';
 import { aBoundedContext } from '../test/builders';
 import { generateJson } from '../utils/json-export';
@@ -41,29 +41,26 @@ function connect(sourceNodeId: string, targetNodeId: string) {
   fireEvent.mouseUp(document, { clientX: 50, clientY: 0 });
 }
 
-function relationshipDialog(): HTMLDialogElement {
-  const heading = screen.getByText('New Relationship');
-  const dialog = heading.closest('dialog');
-  if (!dialog) throw new Error('relationship dialog not found');
-  return dialog;
-}
-
 describe('STORY-002 one mutation path', () => {
-  it('connecting two nodes still opens the relationship dialog', () => {
+  it('connecting two nodes creates the relationship immediately and selects it', () => {
     const { a, b } = seedTwoContexts();
     render(<App />);
 
     connect(a.id, b.id);
 
-    expect(relationshipDialog().open).toBe(true);
+    expect(document.querySelectorAll('.react-flow__edge.selected').length).toBe(1);
+    const panel = screen.getByRole('complementary');
+    expect(
+      within(panel).getByRole('button', { name: /Customer-Supplier/i, pressed: true })
+    ).toBeInTheDocument();
   });
 
-  it('importing JSON while a dialog is open clears pendingConnection/editingEdgeId/editingNodeId', async () => {
+  it('importing JSON while a relationship is selected clears the selection panel', async () => {
     const { a, b } = seedTwoContexts();
     render(<App />);
 
     connect(a.id, b.id);
-    expect(relationshipDialog().open).toBe(true);
+    expect(screen.getByRole('complementary')).toBeInTheDocument();
 
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     const createdInputs: HTMLInputElement[] = [];
@@ -93,6 +90,6 @@ describe('STORY-002 one mutation path', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(relationshipDialog().open).toBe(false);
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
   });
 });
