@@ -10,7 +10,7 @@ import { RELATIONSHIP_META } from '../constants/relationships';
  * unchanged, so normalising is idempotent.
  */
 export function normalizeRelationshipData(data: RelationshipData): RelationshipData {
-  const category = RELATIONSHIP_META[data.relationshipType].category;
+  const category = RELATIONSHIP_META[data.relationshipType]?.category;
 
   if (category === 'upstream-pattern') {
     return {

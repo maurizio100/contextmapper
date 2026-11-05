@@ -44,7 +44,8 @@ describe('Markdown export/import round-trip', () => {
       source: billing.id,
       target: shipping.id,
       data: {
-        relationshipType: 'AnticorruptionLayer',
+        relationshipType: 'CustomerSupplier',
+        downstreamType: 'AnticorruptionLayer',
         sourceRole: 'upstream',
         targetRole: 'downstream',
         notes: 'translation layer needed',
