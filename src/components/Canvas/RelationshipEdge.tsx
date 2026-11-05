@@ -7,6 +7,7 @@ import {
 } from '@xyflow/react';
 import type { Clarity, RelationshipData, RelationshipType } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
+import { markDragEnded } from './dragging';
 
 const CLARITY_STROKE: Record<string, { normal: string; selected: string }> = {
   clear:              { normal: '#22c55e', selected: '#15803d' },
@@ -19,12 +20,6 @@ function strokeColor(clarity: Clarity | undefined, selected: boolean | undefined
   const key = clarity ?? 'none';
   const colors = CLARITY_STROKE[key] ?? CLARITY_STROKE.none;
   return selected ? colors.selected : colors.normal;
-}
-
-let lastDragEndTime = 0;
-
-export function wasDraggingRecently(): boolean {
-  return Date.now() - lastDragEndTime < 300;
 }
 
 /** Point on a quadratic bezier at parameter t */
@@ -154,7 +149,7 @@ export default function RelationshipEdge({
 
   const onPointerUp = useCallback(() => {
     if (dragging.current) {
-      lastDragEndTime = Date.now();
+      markDragEnded();
     }
     dragging.current = false;
   }, []);

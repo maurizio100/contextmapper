@@ -4,6 +4,7 @@ import { CONTEXT_COLORS } from '../../constants/relationships';
 
 interface ContextDialogProps {
   open: boolean;
+  dialogKey?: string;
   initial?: BoundedContextData;
   onConfirm: (data: BoundedContextData) => void;
   onCancel: () => void;
@@ -11,27 +12,52 @@ interface ContextDialogProps {
 
 export default function ContextDialog({
   open,
+  dialogKey,
   initial,
   onConfirm,
   onCancel,
 }: ContextDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [color, setColor] = useState(CONTEXT_COLORS[0]);
 
   useEffect(() => {
     if (open) {
-      setName(initial?.name ?? '');
-      setDescription(initial?.description ?? '');
-      setColor(initial?.color ?? CONTEXT_COLORS[0]);
       dialogRef.current?.showModal();
-      setTimeout(() => nameRef.current?.focus(), 0);
     } else {
       dialogRef.current?.close();
     }
-  }, [open, initial]);
+  }, [open]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onClose={onCancel}
+      className="rounded-xl shadow-2xl border border-gray-200 p-0 backdrop:bg-black/30 max-w-md w-full"
+    >
+      <ContextDialogForm
+        key={dialogKey ?? 'new'}
+        initial={initial}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    </dialog>
+  );
+}
+
+interface ContextDialogFormProps {
+  initial?: BoundedContextData;
+  onConfirm: (data: BoundedContextData) => void;
+  onCancel: () => void;
+}
+
+function ContextDialogForm({ initial, onConfirm, onCancel }: ContextDialogFormProps) {
+  const nameRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState(initial?.name ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [color, setColor] = useState(initial?.color ?? CONTEXT_COLORS[0]);
+
+  useEffect(() => {
+    setTimeout(() => nameRef.current?.focus(), 0);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,11 +66,6 @@ export default function ContextDialog({
   };
 
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onCancel}
-      className="rounded-xl shadow-2xl border border-gray-200 p-0 backdrop:bg-black/30 max-w-md w-full"
-    >
       <form onSubmit={handleSubmit} className="p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4">
           {initial ? 'Edit' : 'New'} Bounded Context
@@ -107,6 +128,5 @@ export default function ContextDialog({
           </button>
         </div>
       </form>
-    </dialog>
   );
 }

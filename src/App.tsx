@@ -12,7 +12,7 @@ import { useJsonImport } from './hooks/useJsonImport';
 import { useFocusMode } from './hooks/useFocusMode';
 import type { BoundedContextData, RelationshipData } from './types/context-map';
 import { exportToPng } from './utils/png-export';
-import { wasDraggingRecently } from './components/Canvas/RelationshipEdge';
+import { wasDraggingRecently } from './components/Canvas/dragging';
 
 function AppInner() {
   const {
@@ -204,6 +204,7 @@ function AppInner() {
 
       <ContextDialog
         open={showContextDialog}
+        dialogKey={editingNodeId ?? 'new'}
         initial={editingNode?.data}
         onConfirm={handleContextConfirm}
         onCancel={handleContextCancel}
@@ -211,6 +212,7 @@ function AppInner() {
 
       <RelationshipDialog
         open={showRelDialog}
+        dialogKey={editingEdgeId ?? (pendingConnection ? 'pending' : 'new')}
         sourceName={editingEdge ? editSourceName : pendingSourceName}
         targetName={editingEdge ? editTargetName : pendingTargetName}
         initial={editingEdge?.data}
