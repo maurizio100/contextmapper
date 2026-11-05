@@ -10,6 +10,7 @@
 | `utils/` | Pure functions: layout, import/export parsing and generation, ids | No React, no DOM state; easy to unit-test. Browser side effects (downloads) stay in small, separate functions. |
 | `hooks/` | React hooks that own state and wire utils to the UI (`useContextMap`, `useFocusMode`, `use*Import/Export`) | Logic belongs in `utils/`; a hook orchestrates. |
 | `components/<Area>/` | UI grouped by area: `Canvas/`, `Dialogs/`, `Toolbar/` | Presentational; receive data and callbacks via props. |
+| `components/ui/` | Shared presentational primitives used by more than one area (button roles: `PrimaryButton`, `SecondaryButton`, `ModeActiveButton`) | One component per file; no domain logic. |
 | `App.tsx` | Composition root: wires hooks to components | |
 
 New behaviour goes into the folder its role dictates. Put non-trivial logic in a pure `utils/` function
