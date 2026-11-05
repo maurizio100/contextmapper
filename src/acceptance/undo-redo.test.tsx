@@ -105,6 +105,15 @@ async function importJsonMap(json: string) {
 
 /** Drags a context's card on the canvas with mouse events. */
 async function dragNode(name: string, dx: number, dy: number) {
+  // jsdom lays the canvas out as a 0x0 box, so React Flow treats every pointer position as
+  // outside it and starts auto-panning; the async pan can then move the node again after
+  // undo. Give the canvas a real size so the drag stays well inside it, as in a browser.
+  const original = Element.prototype.getBoundingClientRect;
+  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+    return this.classList.contains('react-flow')
+      ? DOMRect.fromRect({ x: 0, y: 0, width: 1200, height: 800 })
+      : original.call(this);
+  });
   const nodeEl = screen.getByText(name).closest('.react-flow__node') as HTMLElement;
   // d3-drag reads `event.view`, which jsdom's MouseEvent init refuses; define it on each event.
   const fire = (target: Element | Window, type: 'mouseDown' | 'mouseMove' | 'mouseUp', x: number, y: number) => {
