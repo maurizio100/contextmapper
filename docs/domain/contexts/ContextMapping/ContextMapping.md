@@ -22,3 +22,4 @@ Terms: [`glossary.md`](glossary.md) — this context's own vocabulary, in the fo
 - A bounded context has at most one domain classification (core, supporting or generic). A new bounded context has none, and classifying it never changes its colour.
 - A bounded context has at most one owning team. Team names that differ only in case or surrounding spaces denote the same team.
 - A bounded context's canvas fields (purpose, key terms, business decisions) are optional free text. They belong to its details, not to the drawn context map, and an empty field is not recorded.
+- A bounded context is internal unless the modeller marks it as an external system. An external system takes part in relationships like any other bounded context.
