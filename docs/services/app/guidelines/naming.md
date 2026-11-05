@@ -2,7 +2,7 @@
 
 | Kind | Convention | Example |
 |---|---|---|
-| React component file | `PascalCase.tsx`, one component, **default export** | `components/Dialogs/ContextDialog.tsx` |
+| React component file | `PascalCase.tsx`, one component, **default export** | `components/SelectionPanel/BoundedContextFields.tsx` |
 | Component props | `interface <Component>Props` | `ToolbarProps` |
 | Hook file | `useCamelCase.ts`, **named export** | `hooks/useFocusMode.ts` |
 | Util file | `kebab-case.ts`, **named exports** | `utils/markdown-import.ts` |
