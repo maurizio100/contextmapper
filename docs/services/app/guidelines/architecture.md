@@ -26,6 +26,10 @@ first, then call it from a hook.
   directly. This is what makes undo/redo, persistence and import consistent.
 - **Map state and UI state are separate.** `useContextMap` owns the map (contexts, relationships,
   positions). Selection, the element being edited, open panels and view modes live in their own hooks.
+- **Canvas renderers get behaviour through context.** A custom React Flow node or edge component that
+  needs to change the map gets the mutation from a React context provided above `<ReactFlow>`, never
+  from a function stored in node/edge `data`: `data` stays the serializable domain shape that
+  persistence, import and export read.
 
 ## Persistence
 
