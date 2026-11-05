@@ -6,7 +6,7 @@ Terms specific to this context. Shared terms and cross-context collisions are in
 | Term | Definition | Source | Notes |
 |------|------------|--------|-------|
 | Bounded Context | A box on the context map with a name, a description and a colour, plus optional strategic details such as its domain classification. | owner-notes L2, code:context-map.ts | The owner says "context" |
-| Canvas Fields | A bounded context's purpose, key terms and business decisions, recorded alongside its name and description. | STORY-011 | Planned; shown in the context's details, not on the canvas |
+| Canvas Fields | A bounded context's purpose, key terms and business decisions, recorded alongside its name and description. | STORY-011 | Optional free text; shown in the context's details, not on the canvas |
 | Clarity | How well understood a relationship is: clear, unsure or needs-improvement. | code:context-map.ts | |
 | Context Map | The drawing the modeller produces: a set of bounded contexts and the relationships between them. | owner-notes L1, code:context-map.schema.json | |
 | Dependency Trace | Highlighting every bounded context a context transitively depends on (upstream) or that depends on it (downstream). | STORY-016 | Planned; symmetric relationships are followed both ways |

@@ -85,4 +85,16 @@ describe('parseJson owning team', () => {
     expect(result.nodes).toEqual([]);
     expect(result.warnings).toHaveLength(1);
   });
+
+  it('accepts a node without canvas fields', () => {
+    const result = parseJson(build({}));
+    expect(result.warnings).toEqual([]);
+    expect(result.nodes[0].data.purpose).toBeUndefined();
+  });
+
+  it('skips a node with a non-string purpose and warns', () => {
+    const result = parseJson(build({ purpose: 5 }));
+    expect(result.nodes).toEqual([]);
+    expect(result.warnings).toHaveLength(1);
+  });
 });

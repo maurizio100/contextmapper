@@ -30,6 +30,9 @@ export interface BoundedContextData {
   color: string;
   domainClassification?: DomainClassification;
   owningTeam?: string;
+  purpose?: string;
+  keyTerms?: string;
+  businessDecisions?: string;
 }
 
 export interface ControlOffset {

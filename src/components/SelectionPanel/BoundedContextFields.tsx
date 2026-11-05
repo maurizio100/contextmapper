@@ -4,6 +4,14 @@ import { CONTEXT_COLORS } from '../../constants/relationships';
 import { canonicalTeam } from '../../utils/teams';
 import { CLASSIFICATION_LABELS, DOMAIN_CLASSIFICATIONS } from '../../constants/classification';
 
+type CanvasKey = 'purpose' | 'keyTerms' | 'businessDecisions';
+
+const CANVAS_FIELDS: { key: CanvasKey; label: string }[] = [
+  { key: 'purpose', label: 'Purpose' },
+  { key: 'keyTerms', label: 'Key terms' },
+  { key: 'businessDecisions', label: 'Business decisions' },
+];
+
 interface BoundedContextFieldsProps {
   node: BoundedContextNode;
   /** Every team on the map: the suggestions. */
@@ -24,6 +32,11 @@ export default function BoundedContextFields({ node, teams, otherTeams, onUpdate
   const [description, setDescription] = useState(node.data.description);
   const [color, setColor] = useState(node.data.color);
   const [team, setTeam] = useState(node.data.owningTeam ?? '');
+  const [canvas, setCanvas] = useState<Record<CanvasKey, string>>({
+    purpose: node.data.purpose ?? '',
+    keyTerms: node.data.keyTerms ?? '',
+    businessDecisions: node.data.businessDecisions ?? '',
+  });
   const [nameError, setNameError] = useState(false);
 
   useEffect(() => {
@@ -73,6 +86,19 @@ export default function BoundedContextFields({ node, teams, otherTeams, onUpdate
     }
     onUpdate(node.id, { ...node.data, owningTeam: canonical });
   };
+
+  const handleCanvasFieldChange = (key: CanvasKey, value: string) => {
+    setCanvas((prev) => ({ ...prev, [key]: value }));
+    if (value.trim() === '') {
+      const rest = { ...node.data };
+      delete rest[key];
+      onUpdate(node.id, rest);
+      return;
+    }
+    onUpdate(node.id, { ...node.data, [key]: value });
+  };
+
+  const nothingRecorded = CANVAS_FIELDS.every(({ key }) => !node.data[key]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -136,6 +162,22 @@ export default function BoundedContextFields({ node, teams, otherTeams, onUpdate
           ))}
         </datalist>
       </label>
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-sm font-medium text-gray-700 mb-2">Canvas fields</legend>
+        {nothingRecorded && <p className="text-xs text-gray-500">Nothing recorded yet.</p>}
+        {CANVAS_FIELDS.map(({ key, label }) => (
+          <label key={key} className="block">
+            <span className="text-sm font-medium text-gray-700">{label}</span>
+            <textarea
+              value={canvas[key]}
+              onChange={(e) => handleCanvasFieldChange(key, e.target.value)}
+              rows={2}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+            />
+          </label>
+        ))}
+      </fieldset>
 
       <fieldset>
         <legend className="text-sm font-medium text-gray-700 mb-2">Color</legend>
