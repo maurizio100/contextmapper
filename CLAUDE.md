@@ -8,7 +8,7 @@ A desktop (Tauri) and web app for visually modelling DDD context maps — bounde
 - @xyflow/react 12 (canvas), @dagrejs/dagre (auto-layout), Ajv (JSON schema validation), html-to-image (PNG export)
 - Tauri 2 (Rust) as a thin desktop shell around the web app
 - Persistence: browser `localStorage` only. No backend.
-- Tests: Vitest + Testing Library (not set up yet; the first story with tests sets it up)
+- Tests: Vitest + Testing Library (jsdom)
 
 ## How to run things
 
@@ -16,7 +16,7 @@ A desktop (Tauri) and web app for visually modelling DDD context maps — bounde
 npm install
 npm run dev            # web app on the Vite dev server
 npm run tauri:dev      # desktop app
-npm test               # Vitest (once set up)
+npm test               # Vitest
 npm run lint           # ESLint
 npm run build          # type check + production build
 npm run tauri:build    # desktop bundle

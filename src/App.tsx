@@ -12,7 +12,7 @@ import { useJsonImport } from './hooks/useJsonImport';
 import { useFocusMode } from './hooks/useFocusMode';
 import type { BoundedContextData, RelationshipData } from './types/context-map';
 import { exportToPng } from './utils/png-export';
-import { wasDraggingRecently } from './components/Canvas/RelationshipEdge';
+import { wasDraggingRecently } from './components/Canvas/dragging';
 
 function AppInner() {
   const {
@@ -75,6 +75,7 @@ function AppInner() {
   }, [clearFocus, fitView]);
 
   const [showContextDialog, setShowContextDialog] = useState(false);
+  const [addContextSeq, setAddContextSeq] = useState(0);
 
   // --- Tidy Up: re-pack into an overlap-free grid, then refit ---
   const handleTidy = useCallback(() => {
@@ -84,6 +85,7 @@ function AppInner() {
 
   // --- Add Context ---
   const handleAddContext = useCallback(() => {
+    setAddContextSeq((seq) => seq + 1);
     setShowContextDialog(true);
   }, []);
 
@@ -204,6 +206,7 @@ function AppInner() {
 
       <ContextDialog
         open={showContextDialog}
+        dialogKey={editingNodeId ?? `new-${addContextSeq}`}
         initial={editingNode?.data}
         onConfirm={handleContextConfirm}
         onCancel={handleContextCancel}
@@ -211,6 +214,7 @@ function AppInner() {
 
       <RelationshipDialog
         open={showRelDialog}
+        dialogKey={editingEdgeId ?? (pendingConnection ? 'pending' : 'new')}
         sourceName={editingEdge ? editSourceName : pendingSourceName}
         targetName={editingEdge ? editTargetName : pendingTargetName}
         initial={editingEdge?.data}

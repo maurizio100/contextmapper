@@ -10,6 +10,7 @@ const CLARITY_OPTIONS: { value: Clarity; label: string; color: string; activeCla
 
 interface RelationshipDialogProps {
   open: boolean;
+  dialogKey?: string;
   sourceName: string;
   targetName: string;
   initial?: RelationshipData;
@@ -77,6 +78,7 @@ function normalizeInitial(initial?: RelationshipData): {
 
 export default function RelationshipDialog({
   open,
+  dialogKey,
   sourceName,
   targetName,
   initial,
@@ -84,29 +86,56 @@ export default function RelationshipDialog({
   onCancel,
 }: RelationshipDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [baseType, setBaseType] = useState<RelationshipType>(RelationshipType.CustomerSupplier);
-  const [upstreamPattern, setUpstreamPattern] = useState<RelationshipType | null>(null);
-  const [downstreamPattern, setDownstreamPattern] = useState<RelationshipType | null>(null);
-  const [sourceRole, setSourceRole] = useState<Role>('upstream');
-  const [targetRole, setTargetRole] = useState<Role>('downstream');
-  const [notes, setNotes] = useState('');
-  const [clarity, setClarity] = useState<Clarity | undefined>(undefined);
 
   useEffect(() => {
     if (open) {
-      const n = normalizeInitial(initial);
-      setBaseType(n.baseType);
-      setUpstreamPattern(n.upstreamPattern);
-      setDownstreamPattern(n.downstreamPattern);
-      setSourceRole(n.sourceRole);
-      setTargetRole(n.targetRole);
-      setNotes(n.notes);
-      setClarity(n.clarity);
       dialogRef.current?.showModal();
     } else {
       dialogRef.current?.close();
     }
-  }, [open, initial]);
+  }, [open]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onClose={onCancel}
+      className="rounded-xl shadow-2xl border border-gray-200 p-0 backdrop:bg-black/30 w-[480px] max-w-[calc(100vw-2rem)]"
+    >
+      <RelationshipDialogForm
+        key={dialogKey ?? 'new'}
+        sourceName={sourceName}
+        targetName={targetName}
+        initial={initial}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    </dialog>
+  );
+}
+
+interface RelationshipDialogFormProps {
+  sourceName: string;
+  targetName: string;
+  initial?: RelationshipData;
+  onConfirm: (data: RelationshipData) => void;
+  onCancel: () => void;
+}
+
+function RelationshipDialogForm({
+  sourceName,
+  targetName,
+  initial,
+  onConfirm,
+  onCancel,
+}: RelationshipDialogFormProps) {
+  const n = normalizeInitial(initial);
+  const [baseType, setBaseType] = useState<RelationshipType>(n.baseType);
+  const [upstreamPattern, setUpstreamPattern] = useState<RelationshipType | null>(n.upstreamPattern);
+  const [downstreamPattern, setDownstreamPattern] = useState<RelationshipType | null>(n.downstreamPattern);
+  const [sourceRole, setSourceRole] = useState<Role>(n.sourceRole);
+  const [targetRole, setTargetRole] = useState<Role>(n.targetRole);
+  const [notes, setNotes] = useState(n.notes);
+  const [clarity, setClarity] = useState<Clarity | undefined>(n.clarity);
 
   const baseMeta = RELATIONSHIP_META[baseType];
   const isSymmetric = baseMeta.symmetric;
@@ -149,11 +178,6 @@ export default function RelationshipDialog({
   };
 
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onCancel}
-      className="rounded-xl shadow-2xl border border-gray-200 p-0 backdrop:bg-black/30 w-[480px] max-w-[calc(100vw-2rem)]"
-    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
 
         {/* Header */}
@@ -402,6 +426,5 @@ export default function RelationshipDialog({
         </div>
 
       </form>
-    </dialog>
   );
 }

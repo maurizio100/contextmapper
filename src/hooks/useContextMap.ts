@@ -70,13 +70,11 @@ function saveToStorage(nodes: BoundedContextNode[], edges: RelationshipEdge[]) {
 }
 
 export function useContextMap() {
-  const stored = useRef(loadFromStorage());
-
   const [nodes, setNodes] = useState<BoundedContextNode[]>(
-    () => stored.current?.nodes ?? []
+    () => loadFromStorage()?.nodes ?? []
   );
   const [edges, setEdges] = useState<RelationshipEdge[]>(
-    () => stored.current?.edges ?? []
+    () => loadFromStorage()?.edges ?? []
   );
   const [pendingConnection, setPendingConnection] =
     useState<PendingConnection | null>(null);

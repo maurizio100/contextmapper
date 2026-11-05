@@ -4,9 +4,6 @@
 `@testing-library/jest-dom`. Run with `npm test` (`vitest run`). Every change must also pass
 `npm run lint` and `npm run build` (type check).
 
-> Not set up yet. The first story that needs a test adds the dev dependencies, the `test` script, the
-> `test` block in `vite.config.ts` and `src/test/setup.ts`.
-
 ## Levels
 
 | Level | Tests | Lives in |
