@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# docs portal: symlink created by docs_website's postinstall (see docs_website/README.md)
+docs/node_modules
+
+# personal Claude Code settings
+.claude/settings.local.json
