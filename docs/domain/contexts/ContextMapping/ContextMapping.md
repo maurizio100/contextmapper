@@ -19,3 +19,4 @@ Terms: [`glossary.md`](glossary.md) — this context's own vocabulary, in the fo
 ## Business decisions
 - An upstream pattern (Open Host Service, Published Language) or a downstream pattern (Conformist, Anticorruption Layer) is never a relationship's main type: it sits on its side of a Customer-Supplier relationship. Older maps that store it as the main type are converted on load and import.
 - Every change to the context map can be undone and redone within a session. A new change clears what could be redone. Focusing and selecting are not changes. The undo history is not kept across reloads.
+- A bounded context has at most one domain classification (core, supporting or generic). A new bounded context has none, and classifying it never changes its colour.

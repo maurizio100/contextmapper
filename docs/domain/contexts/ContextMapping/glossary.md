@@ -10,7 +10,7 @@ Terms specific to this context. Shared terms and cross-context collisions are in
 | Clarity | How well understood a relationship is: clear, unsure or needs-improvement. | code:context-map.ts | |
 | Context Map | The drawing the modeller produces: a set of bounded contexts and the relationships between them. | owner-notes L1, code:context-map.schema.json | |
 | Dependency Trace | Highlighting every bounded context a context transitively depends on (upstream) or that depends on it (downstream). | STORY-016 | Planned; symmetric relationships are followed both ways |
-| Domain Classification | The strategic category of a bounded context: core, supporting or generic. | STORY-009 | Planned; optional, independent of the colour |
+| Domain Classification | The strategic category of a bounded context: core, supporting or generic. | STORY-009 | Optional; at most one per context; independent of the colour |
 | Export / Import | Saving or loading a context map as JSON (schema version 1) or Markdown. | code:hooks | Not mentioned by the owner |
 | External System | A bounded context the organisation does not own, such as a third-party or legacy system. | STORY-012 | Planned; a marker on the context |
 | Focus Mode | Restricting the canvas to one context plus its direct neighbours, or to exactly the selected contexts, without changing the underlying map. | owner-notes L4, code:useFocusMode.ts | The owner says "zoom into a context snippet" |
