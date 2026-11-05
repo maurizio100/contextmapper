@@ -26,7 +26,15 @@ vi.mock('@xyflow/react', async (importOriginal) => {
 
 const EDGE_ID = 'edge-1';
 
-function renderEdge(bendEdge: (id: string, offset: { x: number; y: number }) => void) {
+function renderEdge(
+  bendEdge: (id: string, offset: { x: number; y: number }) => void,
+  data: Parameters<typeof RelationshipEdge>[0]['data'] = {
+    relationshipType: RelationshipType.CustomerSupplier,
+    sourceRole: 'upstream',
+    targetRole: 'downstream',
+    notes: '',
+  }
+) {
   const onEdgeClickHandle = vi.fn();
 
   render(
@@ -43,12 +51,7 @@ function renderEdge(bendEdge: (id: string, offset: { x: number; y: number }) => 
           sourcePosition={undefined as never}
           targetPosition={undefined as never}
           selected={false}
-          data={{
-            relationshipType: RelationshipType.CustomerSupplier,
-            sourceRole: 'upstream',
-            targetRole: 'downstream',
-            notes: '',
-          }}
+          data={data}
         />
       </svg>
     </EdgeActionsContext.Provider>
@@ -85,6 +88,21 @@ describe('RelationshipEdge bend', () => {
       EDGE_ID,
       expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
     );
+  });
+});
+
+describe('RelationshipEdge badges', () => {
+  it('renders side pattern badges instead of the centre base badge', () => {
+    renderEdge(vi.fn(), {
+      relationshipType: RelationshipType.CustomerSupplier,
+      upstreamType: RelationshipType.OpenHostService,
+      sourceRole: 'upstream',
+      targetRole: 'downstream',
+      notes: '',
+    });
+
+    expect(screen.getByText('OHS')).toBeInTheDocument();
+    expect(screen.queryByText('CS')).not.toBeInTheDocument();
   });
 });
 

@@ -5,7 +5,7 @@ import {
   useReactFlow,
   type EdgeProps,
 } from '@xyflow/react';
-import type { Clarity, ControlOffset, RelationshipData, RelationshipType } from '../../types/context-map';
+import type { Clarity, ControlOffset, RelationshipData } from '../../types/context-map';
 import { RELATIONSHIP_META } from '../../constants/relationships';
 import { useEdgeActions } from '../../hooks/useEdgeActions';
 
@@ -59,19 +59,8 @@ export default function RelationshipEdge({
   const isDirectional = meta && !meta.symmetric;
 
   // Resolve which badges to render
-  // Backward compat: old edges may store OHS/CF/ACL as the main relationshipType
-  const resolvedUpstreamType: RelationshipType | null = (() => {
-    if (!data || !isDirectional) return null;
-    if (data.upstreamType) return data.upstreamType;
-    const mainCat = RELATIONSHIP_META[data.relationshipType].category;
-    return mainCat === 'upstream-pattern' ? data.relationshipType : null;
-  })();
-  const resolvedDownstreamType: RelationshipType | null = (() => {
-    if (!data || !isDirectional) return null;
-    if (data.downstreamType) return data.downstreamType;
-    const mainCat = RELATIONSHIP_META[data.relationshipType].category;
-    return mainCat === 'downstream-pattern' ? data.relationshipType : null;
-  })();
+  const resolvedUpstreamType = isDirectional ? data?.upstreamType ?? null : null;
+  const resolvedDownstreamType = isDirectional ? data?.downstreamType ?? null : null;
   // Show the base badge (CS) in center only when no side patterns are set
   const showCenterBase =
     isDirectional && !resolvedUpstreamType && !resolvedDownstreamType;

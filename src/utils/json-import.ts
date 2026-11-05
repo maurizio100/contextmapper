@@ -5,6 +5,7 @@ import type {
 } from '../types/context-map';
 import schema from '../schema/context-map.schema.json';
 import { CONTEXT_MAP_JSON_VERSION } from './json-export';
+import { normalizeRelationshipEdge } from './relationship-normalize';
 
 export interface JsonImportResult {
   nodes: BoundedContextNode[];
@@ -80,7 +81,9 @@ export function parseJson(text: string): JsonImportResult {
       );
       return;
     }
-    edges.push({ ...(raw as object), type: 'relationship' } as RelationshipEdge);
+    edges.push(
+      normalizeRelationshipEdge({ ...(raw as object), type: 'relationship' } as RelationshipEdge)
+    );
   });
 
   return { nodes, edges, warnings };

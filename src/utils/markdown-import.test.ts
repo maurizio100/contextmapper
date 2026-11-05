@@ -2,6 +2,33 @@ import { describe, expect, it } from 'vitest';
 import { generateMarkdown } from './markdown-export';
 import { parseMarkdown } from './markdown-import';
 import { aBoundedContext, aRelationship } from '../test/builders';
+import { RelationshipType } from '../types/context-map';
+
+describe('Markdown import legacy relationship normalisation', () => {
+  it('normalises a legacy pattern type cell', () => {
+    const markdown = `
+## Bounded Contexts
+
+### Billing
+
+### Shipping
+
+## Relationships
+
+| # | Upstream | Downstream | Type | Clarity | Notes |
+|---|---|---|---|---|---|
+| 1 | Billing | Shipping | Open Host Service (OHS) | clear | - |
+`;
+
+    const result = parseMarkdown(markdown);
+
+    expect(result.warnings).toEqual([]);
+    expect(result.edges).toHaveLength(1);
+    const importedEdge = result.edges[0];
+    expect(importedEdge.data?.relationshipType).toBe(RelationshipType.CustomerSupplier);
+    expect(importedEdge.data?.upstreamType).toBe(RelationshipType.OpenHostService);
+  });
+});
 
 describe('Markdown export/import round-trip', () => {
   it('preserves name, relationship type, roles, notes and clarity (not ids/positions)', () => {
@@ -17,7 +44,8 @@ describe('Markdown export/import round-trip', () => {
       source: billing.id,
       target: shipping.id,
       data: {
-        relationshipType: 'AnticorruptionLayer',
+        relationshipType: 'CustomerSupplier',
+        downstreamType: 'AnticorruptionLayer',
         sourceRole: 'upstream',
         targetRole: 'downstream',
         notes: 'translation layer needed',
@@ -33,7 +61,8 @@ describe('Markdown export/import round-trip', () => {
 
     expect(result.edges).toHaveLength(1);
     const importedEdge = result.edges[0];
-    expect(importedEdge.data?.relationshipType).toBe('AnticorruptionLayer');
+    expect(importedEdge.data?.relationshipType).toBe('CustomerSupplier');
+    expect(importedEdge.data?.downstreamType).toBe('AnticorruptionLayer');
     expect(importedEdge.data?.sourceRole).toBe('upstream');
     expect(importedEdge.data?.targetRole).toBe('downstream');
     expect(importedEdge.data?.notes).toBe('translation layer needed');

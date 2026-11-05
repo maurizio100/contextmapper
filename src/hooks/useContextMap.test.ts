@@ -2,8 +2,41 @@ import { describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useContextMap } from './useContextMap';
 import { aBoundedContext, aRelationship } from '../test/builders';
+import { RelationshipType } from '../types/context-map';
 
 describe('useContextMap', () => {
+  it('loads legacy relationship types in the current shape', () => {
+    const a = aBoundedContext();
+    const b = aBoundedContext();
+    const legacyEdge = {
+      id: 'legacy-edge',
+      source: a.id,
+      target: b.id,
+      type: 'relationship',
+      sourceHandle: 'right',
+      targetHandle: 'left',
+      data: {
+        relationshipType: RelationshipType.OpenHostService,
+        sourceRole: 'upstream',
+        targetRole: 'downstream',
+        notes: 'legacy stored edge',
+      },
+    };
+    localStorage.setItem(
+      'context-map-data',
+      JSON.stringify({ nodes: [a, b], edges: [legacyEdge] })
+    );
+
+    const { result } = renderHook(() => useContextMap());
+
+    expect(result.current.edges).toHaveLength(1);
+    const loadedEdge = result.current.edges[0];
+    expect(loadedEdge.data?.relationshipType).toBe(RelationshipType.CustomerSupplier);
+    expect(loadedEdge.data?.upstreamType).toBe(RelationshipType.OpenHostService);
+    expect(loadedEdge.sourceHandle).toBe('right-0');
+    expect(loadedEdge.targetHandle).toBe('left-0');
+  });
+
   it('bendEdge merges controlOffset into the matching edge and leaves others untouched', () => {
     const a = aBoundedContext();
     const b = aBoundedContext();

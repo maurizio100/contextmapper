@@ -51,19 +51,9 @@ function normalizeInitial(initial?: RelationshipData): {
     };
   }
 
-  const mainMeta = RELATIONSHIP_META[initial.relationshipType];
-
-  let baseType = initial.relationshipType;
-  let upstreamPattern = initial.upstreamType ?? null;
-  let downstreamPattern = initial.downstreamType ?? null;
-
-  if (mainMeta.category === 'upstream-pattern') {
-    baseType = RelationshipType.CustomerSupplier;
-    upstreamPattern = upstreamPattern ?? initial.relationshipType;
-  } else if (mainMeta.category === 'downstream-pattern') {
-    baseType = RelationshipType.CustomerSupplier;
-    downstreamPattern = downstreamPattern ?? initial.relationshipType;
-  }
+  const baseType = initial.relationshipType;
+  const upstreamPattern = initial.upstreamType ?? null;
+  const downstreamPattern = initial.downstreamType ?? null;
 
   return {
     baseType,

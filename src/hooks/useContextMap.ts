@@ -22,6 +22,7 @@ import {
   layoutDirected,
   resolveDraggedNode,
 } from '../utils/layout';
+import { normalizeRelationshipEdge } from '../utils/relationship-normalize';
 
 const STORAGE_KEY = 'context-map-data';
 
@@ -55,11 +56,13 @@ function loadFromStorage(): StoredData | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as StoredData;
-    data.edges = data.edges?.map((e) => ({
-      ...e,
-      sourceHandle: migrateHandle(e.sourceHandle),
-      targetHandle: migrateHandle(e.targetHandle),
-    }));
+    data.edges = data.edges?.map((e) =>
+      normalizeRelationshipEdge({
+        ...e,
+        sourceHandle: migrateHandle(e.sourceHandle),
+        targetHandle: migrateHandle(e.targetHandle),
+      })
+    );
     return data;
   } catch {
     return null;
