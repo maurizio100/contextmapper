@@ -75,6 +75,16 @@ export default function BoundedContextFields({ node, teams, otherTeams, onUpdate
     onUpdate(node.id, { ...node.data, domainClassification: value as DomainClassification });
   };
 
+  const handleExternalChange = (checked: boolean) => {
+    if (!checked) {
+      const rest = { ...node.data };
+      delete rest.external;
+      onUpdate(node.id, rest);
+      return;
+    }
+    onUpdate(node.id, { ...node.data, external: true });
+  };
+
   const handleTeamChange = (value: string) => {
     setTeam(value);
     const canonical = canonicalTeam(value, otherTeams);
@@ -144,6 +154,15 @@ export default function BoundedContextFields({ node, teams, otherTeams, onUpdate
             </option>
           ))}
         </select>
+      </label>
+
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={node.data.external === true}
+          onChange={(e) => handleExternalChange(e.target.checked)}
+        />
+        <span className="text-sm font-medium text-gray-700">External system</span>
       </label>
 
       <label className="block">

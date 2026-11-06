@@ -64,6 +64,7 @@
         "description": { "type": "string" },
         "color": { "type": "string" },
         "domainClassification": { "type": "string", "enum": ["core", "supporting", "generic"] },
+        "external": { "type": "boolean" },
         "owningTeam": { "type": "string" },
         "purpose": { "type": "string" },
         "keyTerms": { "type": "string" },

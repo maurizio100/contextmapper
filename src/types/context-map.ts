@@ -29,6 +29,7 @@ export interface BoundedContextData {
   description: string;
   color: string;
   domainClassification?: DomainClassification;
+  external?: boolean;
   owningTeam?: string;
   purpose?: string;
   keyTerms?: string;

@@ -12,7 +12,7 @@ Terms specific to this context. Shared terms and cross-context collisions are in
 | Dependency Trace | Highlighting every bounded context a context transitively depends on (upstream) or that depends on it (downstream). | STORY-016 | Planned; symmetric relationships are followed both ways |
 | Domain Classification | The strategic category of a bounded context: core, supporting or generic. | STORY-009 | Optional; at most one per context; independent of the colour |
 | Export / Import | Saving or loading a context map as JSON (schema version 1) or Markdown. | code:hooks | Not mentioned by the owner |
-| External System | A bounded context the organisation does not own, such as a third-party or legacy system. | STORY-012 | Planned; a marker on the context |
+| External System | A bounded context the organisation does not own, such as a third-party or legacy system. | STORY-012 | A marker on the context; contexts are internal unless marked |
 | Focus Mode | Restricting the canvas to one context plus its direct neighbours, or to exactly the selected contexts, without changing the underlying map. | owner-notes L4, code:useFocusMode.ts | The owner says "zoom into a context snippet" |
 | Lens | A way of viewing the context map that highlights the bounded contexts or relationships with one property value and dims the rest, without changing the map. | STORY-017 | Planned; one lens at a time (clarity, domain classification, owning team, relationship type) |
 | Modeller | The person using the app to draw a context map. | owner-notes L1 | Implied; the owner does not name the user |

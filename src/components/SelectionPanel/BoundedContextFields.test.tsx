@@ -107,4 +107,20 @@ describe('BoundedContextFields', () => {
     render(<BoundedContextFields node={filled} teams={[]} otherTeams={[]} onUpdate={vi.fn()} />);
     expect(screen.queryByText('Nothing recorded yet.')).not.toBeInTheDocument();
   });
+
+  it('omits the external key when "External system" is unchecked', () => {
+    const node = aBoundedContext({
+      data: { name: 'Billing', description: '', color: '#3b82f6', external: true },
+    });
+    const onUpdate = vi.fn();
+    render(<BoundedContextFields node={node} teams={[]} otherTeams={[]} onUpdate={onUpdate} />);
+
+    const box = screen.getByLabelText(/external system/i);
+    expect(box).toBeChecked();
+    fireEvent.click(box);
+
+    const data = onUpdate.mock.calls[0][1];
+    expect('external' in data).toBe(false);
+    expect(data.name).toBe('Billing');
+  });
 });
